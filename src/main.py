@@ -2,33 +2,50 @@
 
 import curses
 
-from render import render_blank_screen, render_map
+from render import render_blank_screen, render_map, render_entity
 from map import create_empty_map, set_tile
-from input import get_player_action, ACTION_CANCEL
+from input import (
+    get_player_action,
+    ACTION_CANCEL,
+    ACTION_MOVE_UP,
+    ACTION_MOVE_DOWN,
+    ACTION_MOVE_LEFT,
+    ACTION_MOVE_RIGHT,
+)
+from entities import create_player
+
+MOVE_DELTAS = {
+    ACTION_MOVE_UP: (0, -1),
+    ACTION_MOVE_DOWN: (0, 1),
+    ACTION_MOVE_LEFT: (-1, 0),
+    ACTION_MOVE_RIGHT: (1, 0),
+}
 
 
 def build_test_map():
     """Mapa fixo (hardcoded) só pra testar a renderização."""
     map_grid = create_empty_map()
 
-    # Desenha uma "sala" retangular de piso no meio do grid
     for y in range(5, 15):
         for x in range(10, 40):
             set_tile(map_grid, x, y, "floor")
 
-    # Um corredor horizontal saindo da sala
     for x in range(40, 60):
         set_tile(map_grid, x, 10, "floor")
 
-    # Uma segunda salinha no fim do corredor
     for y in range(7, 13):
         for x in range(60, 70):
             set_tile(map_grid, x, y, "floor")
 
-    # Escada no canto da segunda sala
     set_tile(map_grid, 68, 8, "stairs")
 
     return map_grid
+
+
+def move_player(player, dx, dy):
+    """Move o jogador, sem checar colisao ainda (próximo passo)."""
+    player["x"] += dx
+    player["y"] += dy
 
 
 def main(stdscr):
@@ -37,17 +54,22 @@ def main(stdscr):
     stdscr.keypad(True)
 
     test_map = build_test_map()
+    player = create_player(x=15, y=8)
 
     running = True
     while running:
         render_blank_screen(stdscr)
         render_map(stdscr, test_map)
+        render_entity(stdscr, player)
         stdscr.refresh()
 
         action = get_player_action(stdscr)
 
         if action == ACTION_CANCEL:
             running = False
+        elif action in MOVE_DELTAS:
+            dx, dy = MOVE_DELTAS[action]
+            move_player(player, dx, dy)
 
 
 if __name__ == "__main__":

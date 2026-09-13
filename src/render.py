@@ -26,3 +26,7 @@ def render_map(stdscr, map_grid):
     for y, row in enumerate(map_grid):
         line = "".join(tile["symbol"] for tile in row)
         stdscr.addstr(y, 0, line)
+
+def render_entity(stdscr, entity):
+    """Desenha uma entidade (jogador ou monstro) por cima do mapa."""
+    stdscr.addstr(entity["y"], entity["x"], entity["symbol"])
