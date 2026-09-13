@@ -3,7 +3,7 @@
 import curses
 
 from render import render_blank_screen, render_map, render_entity
-from map import create_empty_map, set_tile
+from map import create_empty_map, set_tile, is_walkable
 from input import (
     get_player_action,
     ACTION_CANCEL,
@@ -42,10 +42,14 @@ def build_test_map():
     return map_grid
 
 
-def move_player(player, dx, dy):
-    """Move o jogador, sem checar colisao ainda (próximo passo)."""
-    player["x"] += dx
-    player["y"] += dy
+def move_player(player, dx, dy, map_grid):
+    """Move o jogador, respeitando colisão com paredes."""
+    new_x = player["x"] + dx
+    new_y = player["y"] + dy
+
+    if is_walkable(map_grid, new_x, new_y):
+        player["x"] = new_x
+        player["y"] = new_y
 
 
 def main(stdscr):
@@ -69,7 +73,7 @@ def main(stdscr):
             running = False
         elif action in MOVE_DELTAS:
             dx, dy = MOVE_DELTAS[action]
-            move_player(player, dx, dy)
+            move_player(player, dx, dy, test_map)
 
 
 if __name__ == "__main__":

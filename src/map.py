@@ -39,3 +39,13 @@ def set_tile(map_grid, x, y, tile_type):
 def get_tile(map_grid, x, y):
     """Retorna o tile na posição (x, y)."""
     return map_grid[y][x]
+
+def is_walkable(map_grid, x, y):
+    """Retorna True se a posição existir no grid e não for parede."""
+    height = len(map_grid)
+    width = len(map_grid[0])
+
+    if x < 0 or x >= width or y < 0 or y >= height:
+        return False
+
+    return get_tile(map_grid, x, y)["type"] != "wall"
