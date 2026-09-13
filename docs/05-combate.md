@@ -52,3 +52,50 @@ defensor.hp -= dano
 
 Se `defensor.hp <= 0` após o ataque, a entidade morre (ver GDD, seção de
 condições de derrota/vitória para o caso do jogador ou do chefe final).
+
+## 4. Fórmula de Dano (versão final)
+
+O dano base continua sendo `max(1, atacante.attack - defensor.defense)`,
+mas agora com uma variação aleatória de **±20%** aplicada em cima do
+resultado, pra evitar que o combate fique previsível demais:
+```
+dano_base = max(1, atacante.attack - defensor.defense)
+variacao = random entre -20% e +20% de dano_base
+dano_final = max(1, round(dano_base + variacao))
+```
+
+O `max(1, ...)` é aplicado de novo no final pra garantir que a variação
+nunca reduza o dano abaixo de 1, mesmo em casos de defesa alta.
+
+Não há chance de erro (miss) nem crítico no MVP — fica registrado como
+ideia de backlog, caso o jogo precise de mais profundidade depois.
+
+## 5. Ações Disponíveis no Turno
+
+- **Atacar:** mover-se em direção a um monstro adjacente (não precisa de
+  comando separado — é automático ao tentar mover pra cima dele).
+- **Usar item:** consumir um item do inventário (ex: poção).
+- **Esperar:** passar o turno parado no lugar.
+
+Não existe uma ação formal de "fugir". Se o jogador quiser deixar de lutar
+contra um monstro, basta se afastar (mover-se pra longe) — o combate não
+"prende" o jogador no lugar. Monstros com IA de perseguição (`ai_type =
+"chase"`, ver `03-arquitetura.md`) podem continuar seguindo o jogador,
+então fugir de fato depende da velocidade relativa entre os dois.
+
+## 6. Feedback Visual/Textual do Combate
+
+O jogo mantém um **log de mensagens com histórico**, exibindo as últimas
+**5 mensagens** na área reservada da tela (ver `03-arquitetura.md`, HUD).
+
+Mensagens mais antigas saem da lista conforme novas são adicionadas
+(estrutura tipo fila/lista com tamanho máximo de 5).
+
+Exemplos de mensagens geradas durante o combate:
+- `"Você atacou o Rato: 4 de dano."`
+- `"O Rato atacou você: 2 de dano."`
+- `"O Rato morreu."`
+- `"Você morreu."` /  `"Você derrotou o chefe final!"`
+
+Cada ação relevante do turno (ataque, uso de item, morte) gera uma nova
+mensagem, adicionada ao topo do log.
