@@ -83,3 +83,40 @@ tipos comuns muda conforme o andar:
 Ao gerar os monstros de um andar (dentro da faixa de quantidade da tabela
 de `04-geracao-mapas.md`), cada monstro sorteado tem essa chance percentual
 de ser um tipo ou outro.
+
+## 5. Comportamentos de IA (`ai_type`)
+
+Existem 4 tipos de comportamento possíveis no jogo. Nem todos são usados pelos monstros atuais, mas ficam documentados para uso futuro (ex: novos monstros do backlog).
+
+### `idle` (parado)
+A entidade não se move nem age até o jogador ficar adjacente a ela.
+**Não usado por nenhum monstro no MVP** — reservado para uso futuro
+(ex: um monstro emboscada/armadilha).
+
+### `chase` (persegue)
+A entidade detecta o jogador dentro de um raio e se move ativamente em
+sua direção a cada turno, atacando quando adjacente.
+**Usado por:** Mulher Afogada, O Deus da Morte.
+
+### `erratic` (aleatório)
+A entidade se move em direção aleatória a cada turno, ignorando a posição
+do jogador. Só ataca se ficar adjacente por acaso.
+**Usado por:** Perturbado de Energia.
+
+### `flee` (foge)
+A entidade foge ativamente do jogador (move-se na direção opsota) quando
+seu HP cai abaixo de um limiar. Antes de atingir esse limiar, comporta-se
+normalmente conforme seu tipo base.
+
+**Usado por:** Mulher Afogada — passa a fugir quando seu HP cair, abaixo
+de **30% do `map_hp`** (ou seja, abaixo de ~4 HP, considerando `max_hp = 14`).
+Isso significa que a Mulher Afogada tem, na prática, um comportamento
+**híbrido**: `chase` enquanto estiver saudável, e `flee` quando ferida.
+
+## 6. Resumo de Comportamento por Monstro
+
+| Monstro               | Comportamento normal | Muda ao ficar ferido? |
+|------------------------|----------------------|--------------------------|
+| Perturbado de Energia  | `erratic`            | Não                      |
+| Mulher Afogada         | `chase`              | Sim → `flee` abaixo de 30% HP |
+| O Deus da Morte        | `chase`              | Não (não recua nunca)    |
