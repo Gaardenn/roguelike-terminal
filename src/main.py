@@ -12,7 +12,7 @@ from input import (
     ACTION_MOVE_LEFT,
     ACTION_MOVE_RIGHT,
 )
-from entities import create_player
+from entities import create_player, spawn_monsters
 
 MOVE_DELTAS = {
     ACTION_MOVE_UP: (0, -1),
@@ -41,11 +41,14 @@ def main(stdscr):
 
     test_map, rooms, player_start = generate_dungeon()
     player = create_player(x=player_start[0], y=player_start[1])
+    monsters = spawn_monsters(test_map, rooms, floor=1)
 
     running = True
     while running:
         render_blank_screen(stdscr)
         render_map(stdscr, test_map)
+        for monster in monsters:
+            render_entity(stdscr, monster)
         render_entity(stdscr, player)
         stdscr.refresh()
 
