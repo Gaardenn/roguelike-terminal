@@ -126,8 +126,11 @@ def _carve_corridor(map_grid, start, end):
         _carve_horizontal(map_grid, x1, x2, y2)
 
 
-def generate_dungeon(width=MAP_WIDTH, height=MAP_HEIGHT):
-    """Gera um mapa completo (salas + corredores). Retorna (map_grid, rooms)."""
+MAX_GENERATION_ATTEMPTS = 30
+
+
+def _generate_dungeon_attempt(width, height):
+    """Uma unica tentativa de gerar o mapa (sem garantia de conectividade)."""
     map_grid = create_empty_map(width, height)
     num_rooms = random.randint(MIN_ROOMS, MAX_ROOMS)
     rooms = _generate_rooms(width, height, num_rooms)
@@ -141,3 +144,60 @@ def generate_dungeon(width=MAP_WIDTH, height=MAP_HEIGHT):
         _carve_corridor(map_grid, start, end)
 
     return map_grid, rooms
+
+
+def generate_dungeon(width=MAP_WIDTH, height=MAP_HEIGHT):
+    """Gera um mapa completo, validando conectividade (04-geracao-mapas.md, secao 5).
+
+    Regenera do zero ate passar na validacao de flood fill, ate um limite
+    de tentativas de seguranca.
+    """
+    for _attempt in range(MAX_GENERATION_ATTEMPTS):
+        map_grid, rooms = _generate_dungeon_attempt(width, height)
+
+        if len(rooms) >= 2 and is_fully_connected(map_grid, rooms):
+            return map_grid, rooms
+
+    # Fallback de seguranca: retorna a ultima tentativa mesmo sem validar,
+    # para nunca travar o jogo indefinidamente (nao deveria acontecer na pratica).
+    return map_grid, rooms
+
+def _flood_fill(map_grid, start_x, start_y):
+    """Retorna o conjunto de posicoes (x, y) de piso alcancaveis a partir do ponto inicial."""
+    height = len(map_grid)
+    width = len(map_grid[0])
+
+    visited = set()
+    stack = [(start_x, start_y)]
+
+    while stack:
+        x, y = stack.pop()
+
+        if (x, y) in visited:
+            continue
+        if x < 0 or x >= width or y < 0 or y >= height:
+            continue
+        if map_grid[y][x]["type"] == "wall":
+            continue
+
+        visited.add((x, y))
+
+        stack.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
+
+    return visited
+
+
+def is_fully_connected(map_grid, rooms):
+    """Verifica se o centro de todas as salas e alcancavel a partir da primeira."""
+    if not rooms:
+        return False
+
+    start_x, start_y = _room_center(rooms[0])
+    reachable = _flood_fill(map_grid, start_x, start_y)
+
+    for room in rooms:
+        center = _room_center(room)
+        if center not in reachable:
+            return False
+
+    return True

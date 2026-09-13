@@ -8,7 +8,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from map import generate_dungeon
+from map import generate_dungeon, is_fully_connected
 
 
 def print_map(map_grid):
@@ -24,6 +24,7 @@ def main():
         map_grid, rooms = generate_dungeon()
         print_map(map_grid)
         print(f"Numero de salas geradas: {len(rooms)}")
+        print(f"Totalmente conectado: {is_fully_connected(map_grid, rooms)}")
 
 
 if __name__ == "__main__":
