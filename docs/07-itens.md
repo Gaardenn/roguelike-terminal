@@ -160,3 +160,31 @@ resolução de combate (`05-combate.md`, seção 3):
 
 Essa decisão acontece **dentro do mesmo turno do ataque recebido** — não
 consome uma ação própria do jogador (é uma reação, não uma ação).
+
+## 8. Sistema de Progressão
+
+Conforme já estabelecido em `02-gdd.md` (seção 3), o jogo **não tem XP
+nem sistema de níveis**. A progressão do jogador acontece inteiramente
+através dos itens encontrados na masmorra:
+
+- **Proteção Leve** aumenta a defesa (`+5`), tornando o jogador mais
+  resistente a dano.
+- **Instrumental** melhora a confiabilidade de outros itens (reduz chance
+  de falha), tornando o uso de recursos mais consistente.
+- **Coração Pulsante** oferece uma rede de segurança situacional (reduzir
+  dano pela metade), mesmo sendo arriscado e de uso limitado.
+- **Cicatrizante** sustenta o jogador ao longo da exploração, permitindo
+  enfrentar mais combater sem morrer.
+- **Machadinha** oferece uma opção de dano à distância, ajudando a lidar
+  com monstros antes que cheguem ao corpo a corpo.
+
+Não há necessidade de um item que aumente HP máximo ou ataque diretamente:
+a combinação de **defesa, confiabilidade e opções táticas** já cumpre o
+papel de "ficar mais forte" ao longo da run, equilibrando com o aumento
+de dificuldade dos andares (mais e mais fortes monstros, ver
+`04-geracao-mapas.md` e `06-entidades.md`).
+
+A run inteira segue, portanto, uma progressão baseada em **build**: o
+jogador fica mais forte não por acumular pontos, mas por administrar bem
+os 8 slots de inventário e decidir quais itens equipar/usar em cada
+situação.
