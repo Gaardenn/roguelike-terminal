@@ -4,6 +4,7 @@ import curses
 
 from render import render_blank_screen, render_map
 from map import create_empty_map, set_tile
+from input import get_player_action, ACTION_CANCEL
 
 
 def build_test_map():
@@ -43,9 +44,9 @@ def main(stdscr):
         render_map(stdscr, test_map)
         stdscr.refresh()
 
-        key = stdscr.getch()
+        action = get_player_action(stdscr)
 
-        if key == 27:  # tecla ESC
+        if action == ACTION_CANCEL:
             running = False
 
 
