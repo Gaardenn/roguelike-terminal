@@ -216,3 +216,14 @@ def place_special_tiles(map_grid, rooms):
 def get_occupant(map_grid, x, y):
     """Retorna a entidade ocupando o tile (x, y), ou None se estiver vazio."""
     return get_tile(map_grid, x, y)["occupant"]
+
+def move_occupant(map_grid, entity, new_x, new_y):
+    """Move uma entidade de um tile para outro, atualizando o campo `occupant`."""
+    old_tile = get_tile(map_grid, entity["x"], entity["y"])
+    old_tile["occupant"] = None
+
+    new_tile = get_tile(map_grid, new_x, new_y)
+    new_tile["occupant"] = entity
+
+    entity["x"] = new_x
+    entity["y"] = new_y
