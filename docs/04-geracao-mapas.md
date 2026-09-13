@@ -63,3 +63,35 @@ sala com monstro/tesouro) não for alcançado pelo flood fill, o mapa é
 Essa checagem é uma segurança extra: mesmo a geração por construção já
 devendo garantir conectividade, o flood fill garante que nenhum bug de
 sobreposição de salas ou corredor mal calculado deixe algo inacessível.
+
+## 6. Regras de Spawn de Monstros
+
+### Spawn Inicial
+Ao gerar um andar, os monstros são posicionados em salas aleatórias,
+respeitando as faixas de quantidade e proporção de tipo já definidas
+(seção 4 deste documento e `06-entidades.md`, seção 4).
+
+**Distância mínima da entrada:** nenhum monstro pode spawnar nas duas
+primeiras salas da sequência de geração (contando a partir da sala de
+entrada, índice 0). Ou seja, monstros só spawnam a partir da 3ª sala
+gerada em diante, dando um espaço inicial seguro pro jogador se orientar.
+
+O chefe final (andar 4) é exceção: sempre spawna fixo na última sala
+(sala de saída), independente dessa regra.
+
+### Respawn Periódico
+Enquanto o jogador estiver no mesmo andar, o jogo verifica periodicamente
+se deve gerar novos monstros, simulando uma masmorra "viva":
+
+- **Intervalo de verificação:** a cada **15 turnos** do jogador.
+- **Condição:** só spawna um novo monstro se a quantidade de monstros
+  vivos no andar estiver **abaixo do limite máximo** da faixa daquele
+  andar (ex: andar 1 tem no máximo 5 — se houver 3 vivos, pode spawnar
+  até 2 novos ao longo do tempo).
+- **Quando ocorre:** se a condição for satisfeita, spawna **1 monstro**
+  por verificação (não vários de uma vez), respeitando a mesma regra de
+  distância mínima da entrada e a mesma proporção de tipos da tabela do
+  andar atual.
+- **Chefe final:** nunca sofre respawn (é único, fixo no andar 4).
+
+Essa regra incentiva o jogador a não demorar excessivamente em um andar, sem punir exploração moderada.
