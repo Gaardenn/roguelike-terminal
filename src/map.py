@@ -126,7 +126,7 @@ def _carve_corridor(map_grid, start, end):
         _carve_horizontal(map_grid, x1, x2, y2)
 
 
-def generate_dungeons(width=MAP_WIDTH, height=MAP_HEIGHT):
+def generate_dungeon(width=MAP_WIDTH, height=MAP_HEIGHT):
     """Gera um mapa completo (salas + corredores). Retorna (map_grid, rooms)."""
     map_grid = create_empty_map(width, height)
     num_rooms = random.randint(MIN_ROOMS, MAX_ROOMS)
