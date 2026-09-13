@@ -148,3 +148,29 @@ def spawn_monsters(map_grid, rooms, floor=1):
         monsters.append(boss)
 
     return monsters
+
+ENERGY_THRESHOLD = 100
+
+
+def gain_energy(entity):
+    """Acumula energia no inicio de cada rodada, conforme 05-combate.md."""
+    entity["energy"] += entity["speed"]
+
+
+def can_act(entity):
+    """Retorna True se a entidade tiver energia suficiente para agir."""
+    return entity["energy"] >= ENERGY_THRESHOLD
+
+
+def consume_energy(entity):
+    """Consome a energia necessaria para uma acao."""
+    entity["energy"] -= ENERGY_THRESHOLD
+
+
+def monster_take_turn(monster, player, map_grid):
+    """Executa a acao de um monstro no turno dele.
+    
+    Ainda e um placeholder - o comportamento de IA de verdade (chase,
+    erratic, flee) e implementado no proximo passo do roadmap
+    """
+    pass

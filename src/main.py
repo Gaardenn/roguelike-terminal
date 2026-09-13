@@ -11,8 +11,16 @@ from input import (
     ACTION_MOVE_DOWN,
     ACTION_MOVE_LEFT,
     ACTION_MOVE_RIGHT,
+    ACTION_WAIT,
 )
-from entities import create_player, spawn_monsters
+from entities import (
+    create_player,
+    spawn_monsters,
+    gain_energy,
+    can_act,
+    consume_energy,
+    monster_take_turn,
+)
 from combat import attempt_attack
 
 MOVE_DELTAS = {
@@ -68,12 +76,24 @@ def main(stdscr):
         stdscr.refresh()
 
         action = get_player_action(stdscr)
+        turn_taken = False
 
         if action == ACTION_CANCEL:
             running = False
         elif action in MOVE_DELTAS:
             dx, dy = MOVE_DELTAS[action]
             last_message = move_player(player, dx, dy, test_map)
+            turn_taken = True
+        elif action == ACTION_WAIT:
+            last_message = "Voce espera."
+            turn_taken = True
+
+        if turn_taken:
+            for monster in monsters:
+                gain_energy(monster)
+                while can_act(monster):
+                    monster_take_turn(monster, player, test_map)
+                    consume_energy(monster)
 
 
 if __name__ == "__main__":
