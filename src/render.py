@@ -20,3 +20,9 @@ def render_blank_screen(stdscr):
     stdscr.addstr(0, 0, "Setup base OK - pressione ESC para sair")
 
     stdscr.refresh()
+
+def render_map(stdscr, map_grid):
+    """Desenha o grid do mapa na tela, linha por linha."""
+    for y, row in enumerate(map_grid):
+        line = "".join(tile["symbol"] for tile in row)
+        stdscr.addstr(y, 0, line)
