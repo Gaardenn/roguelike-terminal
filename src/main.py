@@ -2,8 +2,8 @@
 
 import curses
 
-from render import render_blank_screen, render_map, render_entity
-from map import generate_dungeon, is_walkable
+from render import render_blank_screen, render_map, render_entity, render_message
+from map import generate_dungeon, is_walkable, get_occupant
 from input import (
     get_player_action,
     ACTION_CANCEL,
@@ -13,6 +13,7 @@ from input import (
     ACTION_MOVE_RIGHT,
 )
 from entities import create_player, spawn_monsters
+from combat import attempt_attack
 
 MOVE_DELTAS = {
     ACTION_MOVE_UP: (0, -1),
@@ -25,14 +26,26 @@ MOVE_DELTAS = {
 
 
 def move_player(player, dx, dy, map_grid):
-    """Move o jogador, respeitando colisão com paredes."""
+    """Move o jogador, respeitando colisão com paredes.
+    
+    Se o destino tiver um monstro, nao move: inicia combate no lugar
+    (conforme 05-combate.md, secao 2 - "atacar" e implicito ao mover
+    contra um monstro adjacente). Retorna uma mensagem de log, se houver.
+    """
     new_x = player["x"] + dx
     new_y = player["y"] + dy
 
-    if is_walkable(map_grid, new_x, new_y):
-        player["x"] = new_x
-        player["y"] = new_y
+    if not is_walkable(map_grid, new_x, new_y):
+        return None
 
+    occupant = get_occupant(map_grid, new_x, new_y)
+
+    if occupant is not None:
+        return attempt_attack(player, occupant)
+
+    player["x"] = new_x
+    player["y"] = new_y
+    return None
 
 def main(stdscr):
     curses.curs_set(0)
@@ -42,6 +55,7 @@ def main(stdscr):
     test_map, rooms, player_start = generate_dungeon()
     player = create_player(x=player_start[0], y=player_start[1])
     monsters = spawn_monsters(test_map, rooms, floor=1)
+    last_message = None
 
     running = True
     while running:
@@ -50,6 +64,7 @@ def main(stdscr):
         for monster in monsters:
             render_entity(stdscr, monster)
         render_entity(stdscr, player)
+        render_message(stdscr, last_message)
         stdscr.refresh()
 
         action = get_player_action(stdscr)
@@ -58,7 +73,7 @@ def main(stdscr):
             running = False
         elif action in MOVE_DELTAS:
             dx, dy = MOVE_DELTAS[action]
-            move_player(player, dx, dy, test_map)
+            last_message = move_player(player, dx, dy, test_map)
 
 
 if __name__ == "__main__":

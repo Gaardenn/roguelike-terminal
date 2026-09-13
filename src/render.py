@@ -30,3 +30,10 @@ def render_map(stdscr, map_grid):
 def render_entity(stdscr, entity):
     """Desenha uma entidade (jogador ou monstro) por cima do mapa."""
     stdscr.addstr(entity["y"], entity["x"], entity["symbol"])
+
+def render_message(stdscr, message):
+    """Exibe uma mensagem simples na area de log (versao provisoria, sem historico)."""
+    if message:
+        # Limpa a linha antes de escrever, evitando sobra de texto antigo
+        stdscr.addstr(21, 41, " " * 38)
+        stdscr.addstr(21, 41, message[:38])

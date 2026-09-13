@@ -212,3 +212,7 @@ def place_special_tiles(map_grid, rooms):
     set_tile(map_grid, stairs_x, stairs_y, "stairs")
 
     return player_start
+
+def get_occupant(map_grid, x, y):
+    """Retorna a entidade ocupando o tile (x, y), ou None se estiver vazio."""
+    return get_tile(map_grid, x, y)["occupant"]
