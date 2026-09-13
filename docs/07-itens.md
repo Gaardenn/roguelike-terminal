@@ -62,3 +62,48 @@ inventário e uso (definidos nos próximos itens da 2.4).
 Resumindo o Coração Pulsante: na prática, é uma aposta arriscada — 25% de
 chance de funcionar na primeira vez (ou 50% se tiver o Instrumental
 equipado), e praticamente garantido que se perca no uso seguinte.
+
+## 6. Sistema de Inventário
+
+### Limite
+O inventário do jogador tem **8 slots**. Cada item (independente do tipo)
+ocupa **1 slot**, sem sistema de peso.
+
+Não há empilhamento de itens iguais no MVP: dois "Cicatrizante" ocupam
+2 slots separados (empilhamento pode entrar como melhoria no backlog).
+
+### Estrutura
+Todos os itens ficam numa **lista única** de até 8 posições — não existem
+slots separados de "equipamento" vs "consumíveis". Um item equipável
+(Instrumental, Proteção Leve, Coração Pulsante) ocupa um slot normal do
+inventário mesmo enquanto está equipado/ativo.
+
+Estrutura de dados do inventário:
+```
+inventory = [item, item, None, None, ...] # lista de tamanho fixo 8
+```
+Onde cada `item` é uma referência à definição do item (ver seção 1-5
+deste documento) e `None` representa um slot vazio.
+
+### Inventário Cheio
+Se o jogador tentar coletar um item com o inventário cheio (8/8 ocudpados),
+a coleta falha e uma mensagem aparece no log de combate/eventos (ver
+`05-combate.md`, seção 6): `"Inventário cheio. Não foi possível pegar [item]."`
+O item permanece no chão, podendo ser coletado depois se um slot for liberado.
+
+### Equipáveis Ativos
+Mesmo sem slots separados, o jogo precisa saber **quais itens equipáveis
+estão ativos** no momento (já que Instrumental, Proteção Leve e Coração
+Pulsante dão efeitos passivos/reativos só enquanto equipados). Isso é
+resolvido com uma referência simples no jogador:
+```
+player.equipped = {
+    "instrumental": None ou referência ao item,
+    "protecao": None ou referência ao item,
+    "coracao": None ou referência ao item,
+}
+```
+
+Um item equipável só concede seu efeito se estiver referenciado em
+`player.equipped`, mesmo que ainda ocupe um slot comum do inventário. A
+lógica de "equipar" (como o jogador ativa isso) é o próximo ponto da 2.4.
