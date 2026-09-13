@@ -21,10 +21,11 @@ def main():
 
     for i in range(quantidade):
         print(f"\n===== Mapa {i + 1} =====")
-        map_grid, rooms = generate_dungeon()
+        map_grid, rooms, player_start = generate_dungeon()
         print_map(map_grid)
         print(f"Numero de salas geradas: {len(rooms)}")
         print(f"Totalmente conectado: {is_fully_connected(map_grid, rooms)}")
+        print(f"Posicao inicial do jogador: {player_start}")
 
 
 if __name__ == "__main__":

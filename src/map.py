@@ -150,17 +150,19 @@ def generate_dungeon(width=MAP_WIDTH, height=MAP_HEIGHT):
     """Gera um mapa completo, validando conectividade (04-geracao-mapas.md, secao 5).
 
     Regenera do zero ate passar na validacao de flood fill, ate um limite
-    de tentativas de seguranca.
+    de tentativas de seguranca. Retorna (map_grid, rooms, player_start).
     """
     for _attempt in range(MAX_GENERATION_ATTEMPTS):
         map_grid, rooms = _generate_dungeon_attempt(width, height)
 
         if len(rooms) >= 2 and is_fully_connected(map_grid, rooms):
-            return map_grid, rooms
+            player_start = place_special_tiles(map_grid, rooms)
+            return map_grid, rooms, player_start
 
     # Fallback de seguranca: retorna a ultima tentativa mesmo sem validar,
     # para nunca travar o jogo indefinidamente (nao deveria acontecer na pratica).
-    return map_grid, rooms
+    player_start = place_special_tiles(map_grid, rooms)
+    return map_grid, rooms, player_start
 
 def _flood_fill(map_grid, start_x, start_y):
     """Retorna o conjunto de posicoes (x, y) de piso alcancaveis a partir do ponto inicial."""
@@ -201,3 +203,12 @@ def is_fully_connected(map_grid, rooms):
             return False
 
     return True
+
+def place_special_tiles(map_grid, rooms):
+    """Coloca a escada na ultima sala. Retorna a posicao inicial do jogador (primeira sala)."""
+    player_start = _room_center(rooms[0])
+
+    stairs_x, stairs_y = _room_center(rooms[-1])
+    set_tile(map_grid, stairs_x, stairs_y, "stairs")
+
+    return player_start

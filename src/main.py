@@ -3,7 +3,7 @@
 import curses
 
 from render import render_blank_screen, render_map, render_entity
-from map import create_empty_map, set_tile, is_walkable
+from map import generate_dungeon, is_walkable
 from input import (
     get_player_action,
     ACTION_CANCEL,
@@ -22,24 +22,6 @@ MOVE_DELTAS = {
 }
 
 
-def build_test_map():
-    """Mapa fixo (hardcoded) só pra testar a renderização."""
-    map_grid = create_empty_map()
-
-    for y in range(5, 15):
-        for x in range(10, 40):
-            set_tile(map_grid, x, y, "floor")
-
-    for x in range(40, 60):
-        set_tile(map_grid, x, 10, "floor")
-
-    for y in range(7, 13):
-        for x in range(60, 70):
-            set_tile(map_grid, x, y, "floor")
-
-    set_tile(map_grid, 68, 8, "stairs")
-
-    return map_grid
 
 
 def move_player(player, dx, dy, map_grid):
@@ -57,8 +39,8 @@ def main(stdscr):
     stdscr.nodelay(False)
     stdscr.keypad(True)
 
-    test_map = build_test_map()
-    player = create_player(x=15, y=8)
+    test_map, rooms, player_start = generate_dungeon()
+    player = create_player(x=player_start[0], y=player_start[1])
 
     running = True
     while running:
