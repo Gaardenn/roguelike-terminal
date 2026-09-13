@@ -107,3 +107,56 @@ player.equipped = {
 Um item equipável só concede seu efeito se estiver referenciado em
 `player.equipped`, mesmo que ainda ocupe um slot comum do inventário. A
 lógica de "equipar" (como o jogador ativa isso) é o próximo ponto da 2.4.
+
+## 7. Como o Jogador Equipa/Usa Itens
+
+### Abrindo o Inventário
+O jogador abre a tela de inventário com uma tecla dedicada (ex: `i`).
+Essa tela lista os até 8 slots, mostrando os itens ocupados e indicando
+quais equipáveis estão atualmente ativos (ex: com um marcador `[E]` ao lado do nome).
+
+Abrir/fechar o inventário **não gasta turno** — só as ações executadas
+a partir dele (usar, equipar, arremessar) gastam.
+
+### Selecionar um Item
+O jogador navega pela lista (ex: setas cima/baixo) e pressiona uma tecla
+de confirmação (ex: Enter) sobre o item desejado. O comportamento após
+selecionar depende do `type` do item (ver `07-itens.md`, seções 1-5):
+
+- **Consumível (Cicatrizante):** usa o item imediatamente. Cura o próprio
+  jogador (entre 4 e 18 HP), fecha o inventário, gasta o turno, e o item
+  é removido do slot.
+- **Equipável (Instrumental, Proteção Leve, Coração Pulsante):** a seleção
+  funciona como um **toggle**:
+  - Se não estiver equipado, o item é adicionado a `player.equipped` e
+    passa a valer seu efeito passivo/reativo.
+  - Se já estiver quipado, selecioná-lo de novo **desequipa** (remove
+    de `player.equipped`), mas o item continua no inventário normalmente.
+  - Equipar/desequipar **não gasta turno** (é só uma troca de estado,
+    já que não é uma ação "física" no mundo do jogo).
+- **Arremessável (Machadinha):** ao selecionar, o jogo automaticamente
+  mira no **monstro vivo mais próximo dentro do alcance de 4 tiles**
+  (usando distância em linha reta/Manhattan a partir do jogador). Se
+  houver um alvo válido, o item é lançado (causa 1-6 de dano, é removido
+  do inventário) e o turno é gasto. **Se não houver nenhum monstro dentro
+  do alcance**, a ação é cancelada (não gasta turno) e uma mensagem
+  aparece no log: `"Nenhum alvo ao alcance."`
+
+### Ação Especial do Coração Pulsante
+Diferente dos outros equipáveis, o Coração Pulsante não faz nada sozinho
+ao ser equipado — seu efeito (reduzir dano pela metade) só é **oferecido
+como opção ao jogador no momento em que ele recebe dano**, dentro da
+resolução de combate (`05-combate.md`, seção 3):
+
+1. Jogador leva um ataque.
+2. Se o Coração Pulsante estiver equipado, o jogo pergunta: "Espremer o
+   Coração Pulsante para reduzir o dano pela metade? (S/N)".
+3. Se sim, sorteia a chance de falha (75% na primeira vez, 100% na
+   segunda vez em diante — reduzida em 25 pontos se o Instrumental
+   também estiver equipado).
+4. Se der certo: dano é reduzido pela metade. Se falhar: dano é aplicado
+   normalmente **e** o Coração Pulsante é destruído (removido do
+   inventário).
+
+Essa decisão acontece **dentro do mesmo turno do ataque recebido** — não
+consome uma ação própria do jogador (é uma reação, não uma ação).
