@@ -1,4 +1,6 @@
 import random
+from map import is_walkable, get_occupant, move_occupant
+from combat import resolve_attack
 """Estrutura de entidades (jogador e monstros), conforme 03-arquitetura.md."""
 
 
@@ -167,10 +169,63 @@ def consume_energy(entity):
     entity["energy"] -= ENERGY_THRESHOLD
 
 
+FLEE_HP_THRESHOLD = 0.3  # 06-entidades.md, secao 5
+
+
+def _distance(pos_a, pos_b):
+    """Distancia Manhattan entre duas posicoes."""
+    return abs(pos_a[0] - pos_b[0]) + abs(pos_a[1] - pos_b[1])
+
+
+def _step_towards(mx, my, tx, ty):
+    """Calcula um passo (dx, dy) na direcao do alvo, um eixo por vez."""
+    dx = 1 if tx > mx else -1 if tx < mx else 0
+    dy = 1 if ty > my else -1 if ty < my else 0
+
+    if dx != 0 and dy != 0:
+        if random.choice([True, False]):
+            dy = 0
+        else:
+            dx = 0
+
+    return dx, dy
+
+
+def _random_step():
+    """Passo aleatorio, para o comportamento 'erratic'."""
+    return random.choice([(0, 1), (0, -1), (1, 0), (-1, 0)])
+
+
 def monster_take_turn(monster, player, map_grid):
-    """Executa a acao de um monstro no turno dele.
-    
-    Ainda e um placeholder - o comportamento de IA de verdade (chase,
-    erratic, flee) e implementado no proximo passo do roadmap
+    """Executa a acao de um monstro no turno dele, conforme ai_type
+    (06-entidades.md, secao 5). Retorn (mensagem, jogador_morreu).
     """
-    pass
+    if monster["hp"] <= 0:
+        return None, False
+
+    is_adjacent = _distance((monster["x"], monster["y"]), (player["x"], player["y"])) == 1
+
+    if is_adjacent:
+        return resolve_attack(monster, player)
+
+    ai_type = monster["ai_type"]
+    is_fleeing = monster["hp"] < monster["max_hp"] * FLEE_HP_THRESHOLD and ai_type == "chase"
+
+    if is_fleeing:
+        dx, dy = _step_towards(monster["x"], monster["y"], player["x"], player["y"])
+        dx, dy = -dx, -dy # inverte a direcao: foge em vez de perseguir
+    elif ai_type == "chase":
+        dx, dy = _step_towards(monster["x"], monster["y"], player["x"], player["y"])
+    elif ai_type == "erratic":
+        dx, dy = _random_step()
+    else:
+        dx, dy = (0, 0)
+
+    new_x = monster["x"] + dx
+    new_y = monster["y"] + dy
+
+    if (dx != 0 or dy != 0) and is_walkable(map_grid, new_x, new_y) \
+            and get_occupant(map_grid, new_x, new_y) is None:
+        move_occupant(map_grid, monster, new_x, new_y)
+
+    return None, False
