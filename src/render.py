@@ -44,3 +44,7 @@ def render_items(stdscr, map_grid):
         for x, tile in enumerate(row):
             if tile["item"] is not None:
                 stdscr.addstr(y, x, tile["item"]["symbol"])
+
+def render_floor_indicator(stdscr, floor):
+    """Exibe o andar atula (versao provisoria - o HUD completo e feito na 3.8)."""
+    stdscr.addstr(21, 0, f"Andar: {floor}"[:38])
