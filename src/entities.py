@@ -58,19 +58,32 @@ def create_player(x, y):
     return player
 
 
-def create_perturbado(x, y):
-    """Cria um Perturbado de Energia (06-entidades.md, secao 1)."""
+DIFFICULTY_SCALING_PER_FLOOR = 0.10  # 3.7: +10% de HP/ataque por andar acima do 1o
+
+
+def _scale_for_floor(base_value, floor):
+    """Aplica o escalonamento leve de dificuldade a um atributo base."""
+    multiplier = 1 + (floor - 1) * DIFFICULTY_SCALING_PER_FLOOR
+    return max(1, round(base_value * multiplier))
+
+
+def create_perturbado(x, y, floor=1):
+    """Cria um Perturbado de Energia (06-entidades.md, secao 1), escalado pelo andar."""
     return create_entity(
         name="Perturbado de Energia", symbol="p", x=x, y=y,
-        hp=8, attack=3, defense=0, speed=90, ai_type="erratic",
+        hp=_scale_for_floor(8, floor),
+        attack=_scale_for_floor(3, floor),
+        defense=0, speed=90, ai_type="erratic",
     )
 
 
-def create_mulher_afogada(x, y):
-    """Cria uma Mulher Afogada (06-entidades.md, secao 2)."""
+def create_mulher_afogada(x, y, floor=1):
+    """Cria uma Mulher Afogada (06-entidades.md, secao 2), escalada pelo andar."""
     return create_entity(
         name="Mulher Afogada", symbol="w", x=x, y=y,
-        hp=13, attack=5, defense=2, speed=100, ai_type="chase",
+        hp=_scale_for_floor(14, floor),
+        attack=_scale_for_floor(5, floor),
+        defense=2, speed=100, ai_type="chase",
     )
 
 
@@ -114,9 +127,9 @@ def spawn_monsters(map_grid, rooms, floor=1):
             continue
 
         if random.random() < weights["perturbado"]:
-            monster = create_perturbado(x, y)
+            monster = create_perturbado(x, y, floor=floor)
         else:
-            monster = create_mulher_afogada(x, y)
+            monster = create_mulher_afogada(x, y, floor=floor)
 
         map_grid[y][x]["occupant"] = monster
         monsters.append(monster)
@@ -300,3 +313,27 @@ def monster_take_turn(monster, player, map_grid, on_player_damage=None):
         move_occupant(map_grid, monster, new_x, new_y)
 
     return None, False
+
+TOTAL_FLOORS = 4
+
+
+def descend_floor(player, map_grid, current_floor):
+    """Gera o proximo andar, reposiciona o jogador e retorna os novos
+    dados do jogo: (novo_map, novos_rooms, novos_monstros, novo_andar).
+    
+    O jogador mantem HP, inventario e equipamentos entre andares -
+    so o mapa e os monstros/itens sao regenerados (04-geracao-mapas.md).
+    """
+    from map import generate_dungeon
+    from items import spawn_items
+
+    next_floor = current_floor + 1
+    new_map, new_rooms, player_start = generate_dungeon()
+
+    player["x"], player["y"] = player_start
+    new_map[player["y"]][player["x"]]["occupant"] = player
+
+    new_monsters = spawn_monsters(new_map, new_rooms, floor=next_floor)
+    spawn_items(new_map, new_rooms, floor=next_floor)
+
+    return new_map, new_rooms, new_monsters, next_floor
