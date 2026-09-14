@@ -1,7 +1,31 @@
-import random
-from map import is_walkable, get_occupant, move_occupant
-from combat import resolve_attack
 """Estrutura de entidades (jogador e monstros), conforme 03-arquitetura.md."""
+
+import random
+
+from map import is_walkable, get_occupant, move_occupant
+from combat import calculate_incoming_damage, apply_damage
+from items import TYPE_CONSUMABLE, TYPE_EQUIPABLE, TYPE_THROWABLE, ITEM_CICATRIZANTE
+
+INVENTORY_SIZE = 8
+ENERGY_THRESHOLD = 100
+FLEE_HP_THRESHOLD = 0.3  # 06-entidades.md, secao 5
+THROW_RANGE = 4
+
+FLOOR_MONSTER_RANGES = {
+    1: (3, 5),
+    2: (4, 6),
+    3: (5, 7),
+    4: (5, 8),
+}
+
+FLOOR_WEIGHTS = {
+    1: {"perturbado": 0.70, "mulher": 0.30},
+    2: {"perturbado": 0.55, "mulher": 0.45},
+    3: {"perturbado": 0.40, "mulher": 0.60},
+    4: {"perturbado": 0.25, "mulher": 0.75},
+}
+
+MIN_ROOM_INDEX_FOR_SPAWN = 2
 
 
 def create_entity(name, symbol, x, y, hp, attack, defense, speed=100, is_player=False, ai_type=None):
@@ -23,78 +47,39 @@ def create_entity(name, symbol, x, y, hp, attack, defense, speed=100, is_player=
 
 
 def create_player(x, y):
-    """Cria a entidade do jogador com atributos base."""
-    return create_entity(
-        name="Jogador",
-        symbol="@",
-        x=x,
-        y=y,
-        hp=20,
-        attack=4,
-        defense=1,
-        speed=100,
-        is_player=True,
+    """Cria a entidade do jogador com atributos base e inventario vazio."""
+    player = create_entity(
+        name="Jogador", symbol="@", x=x, y=y,
+        hp=20, attack=4, defense=1, speed=100, is_player=True,
     )
+    player["inventory"] = [None] * INVENTORY_SIZE
+    player["equipped"] = {"instrumental": None, "protecao": None, "coracao": None}
+    player["coracao_uses"] = 0
+    return player
+
 
 def create_perturbado(x, y):
     """Cria um Perturbado de Energia (06-entidades.md, secao 1)."""
     return create_entity(
-        name="Perturbado de Energia",
-        symbol="p",
-        x=x,
-        y=y,
-        hp=8,
-        attack=3,
-        defense=0,
-        speed=90,
-        ai_type="erratic",
+        name="Perturbado de Energia", symbol="p", x=x, y=y,
+        hp=8, attack=3, defense=0, speed=90, ai_type="erratic",
     )
 
 
 def create_mulher_afogada(x, y):
     """Cria uma Mulher Afogada (06-entidades.md, secao 2)."""
     return create_entity(
-        name="Mulher Afogada",
-        symbol="w",
-        x=x,
-        y=y,
-        hp=13,
-        attack=5,
-        defense=2,
-        speed=100,
-        ai_type="chase",
+        name="Mulher Afogada", symbol="w", x=x, y=y,
+        hp=13, attack=5, defense=2, speed=100, ai_type="chase",
     )
 
 
 def create_deus_da_morte(x, y):
     """Cria O Deus da Morte / Parasita de Dimensoes, chefe final (06-entidades.md, secao 3)."""
     return create_entity(
-        name="O Deus da Morte",
-        symbol="D",
-        x=x,
-        y=y,
-        hp=60,
-        attack=12,
-        defense=4,
-        speed=120,
-        ai_type="chase",
+        name="O Deus da Morte", symbol="D", x=x, y=y,
+        hp=60, attack=12, defense=4, speed=120, ai_type="chase",
     )
-
-FLOOR_MONSTER_RANGES = {
-    1: (3, 5),
-    2: (4, 6),
-    3: (5, 7),
-    4: (5, 8),
-}
-
-FLOOR_WEIGHTS = {
-    1: {"perturbado": 0.70, "mulher": 0.30},
-    2: {"perturbado": 0.55, "mulher": 0.45},
-    3: {"perturbado": 0.40, "mulher": 0.60},
-    4: {"perturbado": 0.25, "mulher": 0.75},
-}
-
-MIN_ROOM_INDEX_FOR_SPAWN = 2 # nao spawna nas duas primeiras salas (04-geracao-mapas.md)
 
 
 def _find_free_tile_in_room(map_grid, room, max_attempts=20):
@@ -111,10 +96,7 @@ def _find_free_tile_in_room(map_grid, room, max_attempts=20):
 
 
 def spawn_monsters(map_grid, rooms, floor=1):
-    """Spawna monstros comuns (e o chefe, se for o andar 4), respeitando
-    as faixas de quantidade e proporcao definidas em 04-geracao-mapas.md
-    e 06-entidades.md. Retorna a lista de monstros criados.
-    """
+    """Spawna monstros comuns (e o chefe, se for o andar 4)"""
     monsters = []
     eligible_rooms = rooms[MIN_ROOM_INDEX_FOR_SPAWN:]
 
@@ -129,7 +111,7 @@ def spawn_monsters(map_grid, rooms, floor=1):
         x, y = _find_free_tile_in_room(map_grid, room)
 
         if x is None:
-            continue  # sala sem espaco livre, pula esse spawn
+            continue
 
         if random.random() < weights["perturbado"]:
             monster = create_perturbado(x, y)
@@ -141,17 +123,13 @@ def spawn_monsters(map_grid, rooms, floor=1):
 
     if floor == 4:
         boss_room = rooms[-1]
-        bx, by = _room_center(boss_room) if "_room_center" in globals() else (
-            boss_room["x"] + boss_room["w"] // 2,
-            boss_room["y"] + boss_room["h"] // 2,
-        )
+        bx = boss_room["x"] + boss_room["w"] // 2
+        by = boss_room["y"] + boss_room["h"] // 2
         boss = create_deus_da_morte(bx, by)
         map_grid[by][bx]["occupant"] = boss
         monsters.append(boss)
 
     return monsters
-
-ENERGY_THRESHOLD = 100
 
 
 def gain_energy(entity):
@@ -169,7 +147,87 @@ def consume_energy(entity):
     entity["energy"] -= ENERGY_THRESHOLD
 
 
-FLEE_HP_THRESHOLD = 0.3  # 06-entidades.md, secao 5
+def get_effective_defense(player):
+    """Defesa efetiva do jogador, somando o bonus da Protecao Leve se equipada."""
+    bonus = 5 if player["equipped"].get("protecao") is not None else 0
+    return player["defense"] + bonus
+
+
+def add_item_to_inventory(player, item):
+    """Adiciona um item ao primeiro slot livre. Retorna True se coube."""
+    for i in range(INVENTORY_SIZE):
+        if player["inventory"][i] is None:
+            player["inventory"][i] = item
+            return True
+    return False
+
+
+def toggle_equip(player, slot_index):
+    """Equipa ou desequipa o item equipavel no slot informado."""
+    item = player["inventory"][slot_index]
+    if item is None or item["type"] != TYPE_EQUIPABLE:
+        return None
+
+    key = item["item_id"]
+
+    if player["equipped"].get(key) is item:
+        player["equipped"][key] = None
+        if key == "coracao":
+            player["coracao_uses"] = 0
+        return f"{item['name']} desequipado."
+
+    player["equipped"][key] = item
+    if key == "coracao":
+        player["coracao_uses"] = 0
+        return f"{item['name']} equipado."
+
+
+def use_consumable(player, slot_index):
+    """Usa um item consumivel (Cicatrizante)."""
+    item = player["inventory"][slot_index]
+    if item is None or item["type"] != TYPE_CONSUMABLE:
+        return None
+
+    if item["item_id"] == ITEM_CICATRIZANTE:
+        heal = random.randint(4, 18)
+        player["hp"] = min(player["max_hp"], player["hp"] + heal)
+        player["inventory"][slot_index] = None
+        return f"Voce usa Cicatrizante e recupera {heal} HP."
+
+    return None
+
+
+def throw_item(player, slot_index, map_grid, monsters):
+    """Arremessa um item (Machadinha) no monstro vivo mais proximo dentro do alcance."""
+    item = player["inventory"][slot_index]
+    if item is None or item["type"] != TYPE_THROWABLE:
+        return None
+
+    target = None
+    best_dist = None
+
+    for monster in monsters:
+        dist = _distance((player["x"], player["y"]), (monster["x"], monster["y"]))
+        if dist <= THROW_RANGE and (best_dist is None or dist < best_dist):
+            best_dist = dist
+            target = monster
+
+    if target is None:
+        return "Nenhum alvo ao alcance"
+
+    damage = random.randint(1, 6)
+    target["hp"] -= damage
+    player["inventory"][slot_index] = None
+
+    message = f"Voce arremessa {item['name']} em {target['name']}: {damage} de dano."
+
+    if target["hp"] <= 0:
+        target["hp"] = 0
+        map_grid[target["y"]][target["x"]]["occupant"] = None
+        monsters.remove(target)
+        message += f" {target['name']} morreu."
+
+    return message
 
 
 def _distance(pos_a, pos_b):
@@ -196,9 +254,9 @@ def _random_step():
     return random.choice([(0, 1), (0, -1), (1, 0), (-1, 0)])
 
 
-def monster_take_turn(monster, player, map_grid):
+def monster_take_turn(monster, player, map_grid, on_player_damage=None):
     """Executa a acao de um monstro no turno dele, conforme ai_type
-    (06-entidades.md, secao 5). Retorn (mensagem, jogador_morreu).
+    (06-entidades.md, secao 5). Retorna (mensagem, jogador_morreu).
     """
     if monster["hp"] <= 0:
         return None, False
@@ -206,14 +264,27 @@ def monster_take_turn(monster, player, map_grid):
     is_adjacent = _distance((monster["x"], monster["y"]), (player["x"], player["y"])) == 1
 
     if is_adjacent:
-        return resolve_attack(monster, player)
+        effective_defense = get_effective_defense(player)
+        raw_damage = calculate_incoming_damage(monster, effective_defense)
+
+        if on_player_damage is not None:
+            final_damage, extra_message = on_player_damage(raw_damage)
+        else:
+            final_damage, extra_message = raw_damage, ""
+
+        died = apply_damage(player, final_damage)
+        message = f"{monster['name']} atacou {player['name']}: {final_damage} de dano.{extra_message}"
+        if died:
+            message += " Voce morreu."
+
+        return message, died
 
     ai_type = monster["ai_type"]
     is_fleeing = monster["hp"] < monster["max_hp"] * FLEE_HP_THRESHOLD and ai_type == "chase"
 
     if is_fleeing:
         dx, dy = _step_towards(monster["x"], monster["y"], player["x"], player["y"])
-        dx, dy = -dx, -dy # inverte a direcao: foge em vez de perseguir
+        dx, dy = -dx, -dy
     elif ai_type == "chase":
         dx, dy = _step_towards(monster["x"], monster["y"], player["x"], player["y"])
     elif ai_type == "erratic":
