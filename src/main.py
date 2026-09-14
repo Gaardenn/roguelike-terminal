@@ -3,7 +3,7 @@
 import curses
 import random
 
-from render import render_blank_screen, render_map, render_entity, render_message, render_items, render_floor_indicator
+from render import render_blank_screen, render_map, render_entity, render_items, render_status, render_log
 from map import generate_dungeon, is_walkable, get_occupant, move_occupant
 from input import (
     get_player_action,
@@ -180,7 +180,11 @@ def main(stdscr):
     monsters = spawn_monsters(test_map, rooms, floor=current_floor)
     spawn_items(test_map, rooms, floor=current_floor)
 
-    last_message = None
+    message_log = []
+
+    def push_message(msg):
+        if msg:
+            message_log.append(msg)
 
     running = True
     while running:
@@ -190,8 +194,8 @@ def main(stdscr):
         for monster in monsters:
             render_entity(stdscr, monster)
         render_entity(stdscr, player)
-        render_message(stdscr, last_message)
-        render_floor_indicator(stdscr, current_floor)
+        render_status(stdscr, player, current_floor)
+        render_log(stdscr, message_log)
         stdscr.refresh()
 
         action = get_player_action(stdscr)
@@ -205,23 +209,23 @@ def main(stdscr):
             
             if result == "STAIRS":
                 if current_floor >= TOTAL_FLOORS:
-                    last_message = "Voce esta no ultimo andar!"
+                    push_message("Voce esta no ultimo andar!")
                 else:
                     test_map, rooms, monsters, current_floor = descend_floor(
                         player, test_map, current_floor
                     )
-                    last_message = f"Voce desce para o andar {current_floor}."
+                    push_message(f"Voce desce para o andar {current_floor}.")
                 turn_taken = False
             else:
-                last_message = result
+                push_message(result)
                 turn_taken = True
         elif action == ACTION_WAIT:
-            last_message = "Voce espera."
+            push_message("Voce espera.")
             turn_taken = True
         elif action == ACTION_INVENTORY:
             result = open_inventory(stdscr, player, test_map, monsters)
             if result:
-                last_message = result
+                push_message(result)
 
         if turn_taken and running:
             for monster in list(monsters):
@@ -234,10 +238,10 @@ def main(stdscr):
                     consume_energy(monster)
 
                     if message:
-                        last_message = message
+                        push_message(message)
 
                     if player_died:
-                        last_message = "Voce morreu."
+                        push_message("Voce morreu.")
                         running = False
                         break
 
