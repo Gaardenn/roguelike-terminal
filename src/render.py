@@ -31,12 +31,6 @@ def render_entity(stdscr, entity):
     """Desenha uma entidade (jogador ou monstro) por cima do mapa."""
     stdscr.addstr(entity["y"], entity["x"], entity["symbol"])
 
-def render_message(stdscr, message):
-    """Exibe uma mensagem simples na area de log (versao provisoria, sem historico)."""
-    if message:
-        # Limpa a linha antes de escrever, evitando sobra de texto antigo
-        stdscr.addstr(21, 41, " " * 38)
-        stdscr.addstr(21, 41, message[:38])
 
 def render_items(stdscr, map_grid):
     """Desenha os itens que estao no chao do mapa."""
@@ -45,6 +39,33 @@ def render_items(stdscr, map_grid):
             if tile["item"] is not None:
                 stdscr.addstr(y, x, tile["item"]["symbol"])
 
-def render_floor_indicator(stdscr, floor):
-    """Exibe o andar atula (versao provisoria - o HUD completo e feito na 3.8)."""
-    stdscr.addstr(21, 0, f"Andar: {floor}"[:38])
+STATUS_START_Y = 21
+LOG_START_Y = 21
+LOG_START_X = 41
+LOG_WIDTH = 38
+LOG_MAX_LINES = 4  # 08-interface.md: area de log tem 4 linhas uteis (linhas 20-23)
+
+
+def render_status(stdscr, player, floor):
+    """Desenha o painel de status: HP, andar e itens equipados (08-interface.md, secao 1)."""
+    # Limpa a area do status antes de redesenhar
+    for i in range(4):
+        stdscr.addstr(STATUS_START_Y + i, 0, " " * 40)
+
+    stdscr.addstr(STATUS_START_Y, 0, f"HP: {player['hp']}/{player['max_hp']}    Andar: {floor}")
+
+    equipped_names = [
+        item["name"] for item in player["equipped"].values() if item is not None
+    ]
+    equipped_text = ", ".join(equipped_names) if equipped_names else "nenhum"
+    stdscr.addstr(STATUS_START_Y + 1, 0, f"Equipado: {equipped_text}"[:39])
+
+
+def render_log(stdscr, messages):
+    """Desenha as ultimas mensagens do log (08-interface.md, secao 1)."""
+    for i in range(LOG_MAX_LINES):
+        stdscr.addstr(LOG_START_Y + i, LOG_START_X, " " * LOG_WIDTH)
+
+    recent = messages[-LOG_MAX_LINES:]
+    for i, message in enumerate(recent):
+        stdscr.addstr(LOG_START_Y + i, LOG_START_X, message[:LOG_WIDTH])
