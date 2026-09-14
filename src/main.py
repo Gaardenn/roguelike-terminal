@@ -3,7 +3,7 @@
 import curses
 import random
 
-from render import render_blank_screen, render_map, render_entity, render_message, render_items
+from render import render_blank_screen, render_map, render_entity, render_message, render_items, render_floor_indicator
 from map import generate_dungeon, is_walkable, get_occupant, move_occupant
 from input import (
     get_player_action,
@@ -26,7 +26,9 @@ from entities import (
     toggle_equip,
     use_consumable,
     throw_item,
+    descend_floor,
     INVENTORY_SIZE,
+    TOTAL_FLOORS,
 )
 from items import spawn_items, TYPE_CONSUMABLE, TYPE_EQUIPABLE, TYPE_THROWABLE
 from combat import resolve_attack
@@ -64,6 +66,10 @@ def move_player(player, dx, dy, map_grid, monsters):
     move_occupant(map_grid, player, new_x, new_y)
 
     tile = map_grid[new_y][new_x]
+
+    if tile["type"] == "stairs":
+        return "STAIRS"
+    
     if tile["item"] is not None:
         item = tile["item"]
         if add_item_to_inventory(player, item):
@@ -170,8 +176,9 @@ def main(stdscr):
     player = create_player(x=player_start[0], y=player_start[1])
     test_map[player["y"]][player["x"]]["occupant"] = player
 
-    monsters = spawn_monsters(test_map, rooms, floor=1)
-    spawn_items(test_map, rooms, floor=1)
+    current_floor = 1
+    monsters = spawn_monsters(test_map, rooms, floor=current_floor)
+    spawn_items(test_map, rooms, floor=current_floor)
 
     last_message = None
 
@@ -184,6 +191,7 @@ def main(stdscr):
             render_entity(stdscr, monster)
         render_entity(stdscr, player)
         render_message(stdscr, last_message)
+        render_floor_indicator(stdscr, current_floor)
         stdscr.refresh()
 
         action = get_player_action(stdscr)
@@ -193,8 +201,20 @@ def main(stdscr):
             running = False
         elif action in MOVE_DELTAS:
             dx, dy = MOVE_DELTAS[action]
-            last_message = move_player(player, dx, dy, test_map, monsters)
-            turn_taken = True
+            result = move_player(player, dx, dy, test_map, monsters)
+            
+            if result == "STAIRS":
+                if current_floor >= TOTAL_FLOORS:
+                    last_message = "Voce esta no ultimo andar!"
+                else:
+                    test_map, rooms, monsters, current_floor = descend_floor(
+                        player, test_map, current_floor
+                    )
+                    last_message = f"Voce desce para o andar {current_floor}."
+                turn_taken = False
+            else:
+                last_message = result
+                turn_taken = True
         elif action == ACTION_WAIT:
             last_message = "Voce espera."
             turn_taken = True
