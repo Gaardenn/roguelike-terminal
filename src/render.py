@@ -37,3 +37,10 @@ def render_message(stdscr, message):
         # Limpa a linha antes de escrever, evitando sobra de texto antigo
         stdscr.addstr(21, 41, " " * 38)
         stdscr.addstr(21, 41, message[:38])
+
+def render_items(stdscr, map_grid):
+    """Desenha os itens que estao no chao do mapa."""
+    for y, row in enumerate(map_grid):
+        for x, tile in enumerate(row):
+            if tile["item"] is not None:
+                stdscr.addstr(y, x, tile["item"]["symbol"])
