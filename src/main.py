@@ -3,7 +3,17 @@
 import curses
 import random
 
-from render import render_blank_screen, render_map, render_entity, render_items, render_status, render_log
+from render import (
+    render_blank_screen,
+    render_map,
+    render_entity,
+    render_items,
+    render_status,
+    render_log,
+    render_menu_screen,
+    render_game_over_screen,
+    render_victory_screen,
+)
 from map import generate_dungeon, is_walkable, get_occupant, move_occupant
 from input import (
     get_player_action,
@@ -167,11 +177,11 @@ def open_inventory(stdscr, player, map_grid, monsters):
     return message
 
 
-def main(stdscr):
-    curses.curs_set(0)
-    stdscr.nodelay(False)
-    stdscr.keypad(True)
+BOSS_NAME = "O Deus da Morte"
 
+
+def run_game(stdscr):
+    """Executa uma partida completa. Retorna ('defeat', andar) ou ('victory', andar) ou ('menu', andar)."""
     test_map, rooms, player_start = generate_dungeon()
     player = create_player(x=player_start[0], y=player_start[1])
     test_map[player["y"]][player["x"]]["occupant"] = player
@@ -202,7 +212,7 @@ def main(stdscr):
         turn_taken = False
 
         if action == ACTION_CANCEL:
-            running = False
+            return "menu", current_floor
         elif action in MOVE_DELTAS:
             dx, dy = MOVE_DELTAS[action]
             result = move_player(player, dx, dy, test_map, monsters)
@@ -241,12 +251,74 @@ def main(stdscr):
                         push_message(message)
 
                     if player_died:
-                        push_message("Voce morreu.")
-                        running = False
-                        break
+                        return "defeat", current_floor
 
                 if not running:
                     break
+
+            if current_floor == TOTAL_FLOORS and not any(m["name"] == BOSS_NAME for m in monsters):
+                return "victory", current_floor
+
+
+def show_menu(stdscr):
+    render_menu_screen(stdscr)
+    while True:
+        key = stdscr.getch()
+        if key in (10, 13):
+            return "start"
+        if key == 27:
+            return "quit"
+
+
+def show_game_over(stdscr, floor_reached):
+    render_game_over_screen(stdscr, floor_reached)
+    while True:
+        key = stdscr.getch()
+        if key in (10, 13):
+            return "restart"
+        if key == 27:
+            return "quit"
+
+
+def show_victory(stdscr):
+    render_victory_screen(stdscr)
+    while True:
+        key = stdscr.getch()
+        if key in (10, 13):
+            return "restart"
+        if key == 27:
+            return "quit"
+
+
+def main(stdscr):
+    curses.curs_set(0)
+    stdscr.nodelay(False)
+    stdscr.keypad(True)
+
+    state = "menu"
+
+    while state != "exit":
+        if state == "menu":
+            choice = show_menu(stdscr)
+            state = "playing" if choice == "start" else "exit"
+
+        elif state == "playing":
+            outcome, floor_reached = run_game(stdscr)
+            if outcome == "menu":
+                state = "menu"
+            elif outcome == "defeat":
+                state = "game_over"
+                last_floor_reached = floor_reached
+            elif outcome == "victory":
+                state = "victory"
+
+        elif state == "game_over":
+            choice = show_game_over(stdscr, last_floor_reached)
+            state = "menu" if choice == "restart" else "exit"
+
+        elif state == "victory":
+            choice = show_victory(stdscr)
+            state = "menu" if choice == "restart" else "exit"
 
 
 if __name__ == "__main__":
