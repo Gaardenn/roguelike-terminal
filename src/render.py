@@ -69,3 +69,50 @@ def render_log(stdscr, messages):
     recent = messages[-LOG_MAX_LINES:]
     for i, message in enumerate(recent):
         stdscr.addstr(LOG_START_Y + i, LOG_START_X, message[:LOG_WIDTH])
+
+def render_menu_screen(stdscr):
+    """Tela de Menu Inicial (estados-jogo.drawio)."""
+    stdscr.clear()
+    lines = [
+        "ROGUELIKE DE TERMINAL",
+        "",
+        "Desca os 4 andares da masmorra e derrote O Deus da Morte.",
+        "",
+        "Enter - Iniciar jogo",
+        "Esc - Sair",
+    ]
+    for i, line in enumerate(lines):
+        stdscr.addstr(5 + i, 10, line)
+    stdscr.refresh()
+
+
+def render_game_over_screen(stdscr, floor_reached):
+    """Tela de Derrota (game over)."""
+    stdscr.clear()
+    lines = [
+        "VOCE MORREU",
+        "",
+        f"Voce chegou ate o andar {floor_reached}.",
+        "",
+        "Enter - Reiniciar",
+        "Esc - Sair",
+    ]
+    for i, line in enumerate(lines):
+        stdscr.addstr(5 + i, 10, line)
+    stdscr.refresh()
+
+
+def render_victory_screen(stdscr):
+    """Tela de Vitoria (chefe final derrotado)."""
+    stdscr.clear()
+    lines = [
+        "VOCE VENCEU!",
+        "",
+        "Voce derrotou O Deus da Morte e escapou da masmorra.",
+        "",
+        "Enter - Reiniciar",
+        "Esc - Sair",
+    ]
+    for i, line in enumerate(lines):
+        stdscr.addstr(5 + i, 10, line)
+    stdscr.refresh()
