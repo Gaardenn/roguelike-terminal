@@ -1,3 +1,5 @@
+import curses
+import textwrap
 """Funções de renderização da tela do jogo."""
 
 SCREEN_WIDTH = 80
@@ -22,37 +24,54 @@ def render_blank_screen(stdscr):
     stdscr.refresh()
 
 def render_map(stdscr, map_grid):
-    """Desenha o grid do mapa na tela, linha por linha."""
+    """Desenha o grid do mapa na tela, linha por linha, com cores."""
     for y, row in enumerate(map_grid):
-        line = "".join(tile["symbol"] for tile in row)
-        stdscr.addstr(y, 0, line)
+        for x, tile in enumerate(row):
+            color = COLOR_STAIRS if tile["type"] == "stairs" else COLOR_WALL if tile["type"] == "wall" else 0
+            attr = curses.color_pair(color) if color else 0
+            stdscr.addstr(y, x, tile["symbol"], attr)
 
 def render_entity(stdscr, entity):
-    """Desenha uma entidade (jogador ou monstro) por cima do mapa."""
-    stdscr.addstr(entity["y"], entity["x"], entity["symbol"])
+    """Desenha uma entidade (jogador ou monstro) por cima do mapa, com cor."""
+    if entity.get("is_player"):
+        color = COLOR_PLAYER
+    else:
+        color = MONSTER_COLORS.get(entity["name"], 0)
+
+    attr = curses.color_pair(color) if color else 0
+    stdscr.addstr(entity["y"], entity["x"], entity["symbol"], attr)
 
 
 def render_items(stdscr, map_grid):
-    """Desenha os itens que estao no chao do mapa."""
+    """Desenha os itens que estao no chao do mapa, com cor."""
     for y, row in enumerate(map_grid):
         for x, tile in enumerate(row):
             if tile["item"] is not None:
-                stdscr.addstr(y, x, tile["item"]["symbol"])
+                stdscr.addstr(y, x, tile["item"]["symbol"], curses.color_pair(COLOR_ITEM))
 
 STATUS_START_Y = 21
 LOG_START_Y = 21
 LOG_START_X = 41
-LOG_WIDTH = 38
+LOG_WIDTH = 39  # colunas 41 a 79 (borda direita da tela de 80 colunas)
 LOG_MAX_LINES = 4  # 08-interface.md: area de log tem 4 linhas uteis (linhas 20-23)
 
 
 def render_status(stdscr, player, floor):
     """Desenha o painel de status: HP, andar e itens equipados (08-interface.md, secao 1)."""
-    # Limpa a area do status antes de redesenhar
     for i in range(4):
         stdscr.addstr(STATUS_START_Y + i, 0, " " * 40)
 
-    stdscr.addstr(STATUS_START_Y, 0, f"HP: {player['hp']}/{player['max_hp']}    Andar: {floor}")
+    hp_ratio = player["hp"] / player["max_hp"] if player["max_hp"] else 0
+    if hp_ratio > 0.6:
+        hp_color = COLOR_HP_HIGH
+    elif hp_ratio > 0.3:
+        hp_color = COLOR_HP_MID
+    else:
+        hp_color = COLOR_HP_LOW
+    
+    stdscr.addstr(STATUS_START_Y, 0, "HP: ")
+    stdscr.addstr(f"{player['hp']}/{player['max_hp']}", curses.color_pair(hp_color))
+    stdscr.addstr(f"    Andar: {floor}")
 
     equipped_names = [
         item["name"] for item in player["equipped"].values() if item is not None
@@ -62,13 +81,18 @@ def render_status(stdscr, player, floor):
 
 
 def render_log(stdscr, messages):
-    """Desenha as ultimas mensagens do log (08-interface.md, secao 1)."""
+    """Desenha as mensagens mais recentes do log, quebrando mensagens
+    longas em multiplas linhas (08-interface.md, secao 1)."""
     for i in range(LOG_MAX_LINES):
         stdscr.addstr(LOG_START_Y + i, LOG_START_X, " " * LOG_WIDTH)
 
-    recent = messages[-LOG_MAX_LINES:]
-    for i, message in enumerate(recent):
-        stdscr.addstr(LOG_START_Y + i, LOG_START_X, message[:LOG_WIDTH])
+    wrapped_lines = []
+    for message in messages:
+        wrapped_lines.extend(textwrap.wrap(message, LOG_WIDTH) or [""])
+
+    visible_lines = wrapped_lines[-LOG_MAX_LINES:]
+    for i, line in enumerate(visible_lines):
+        stdscr.addstr(LOG_START_Y + i, LOG_START_X, line)
 
 def render_menu_screen(stdscr):
     """Tela de Menu Inicial (estados-jogo.drawio)."""
@@ -116,3 +140,42 @@ def render_victory_screen(stdscr):
     for i, line in enumerate(lines):
         stdscr.addstr(5 + i, 10, line)
     stdscr.refresh()
+
+COLOR_PLAYER = 1
+COLOR_WALL = 2
+COLOR_STAIRS = 3
+COLOR_PERTURBADO = 4
+COLOR_MULHER = 5
+COLOR_BOSS = 6
+COLOR_ITEM = 7
+COLOR_HP_HIGH = 8
+COLOR_HP_MID = 9
+COLOR_HP_LOW = 10
+COLOR_LOG_DAMAGE = 11
+COLOR_LOG_NEUTRAL = 12
+
+
+def init_colors():
+    """Inicializa os pares de cor do curses (08-interface.md, secao 2)."""
+    curses.start_color()
+    curses.use_default_colors()
+
+    curses.init_pair(COLOR_PLAYER, curses.COLOR_CYAN, -1)
+    curses.init_pair(COLOR_WALL, curses.COLOR_BLACK, -1)
+    curses.init_pair(COLOR_STAIRS, curses.COLOR_YELLOW, -1)
+    curses.init_pair(COLOR_PERTURBADO, curses.COLOR_MAGENTA, -1)
+    curses.init_pair(COLOR_MULHER, curses.COLOR_BLUE, -1)
+    curses.init_pair(COLOR_BOSS, curses.COLOR_RED, -1)
+    curses.init_pair(COLOR_ITEM, curses.COLOR_YELLOW, -1)
+    curses.init_pair(COLOR_HP_HIGH, curses.COLOR_GREEN, -1)
+    curses.init_pair(COLOR_HP_MID, curses.COLOR_YELLOW, -1)
+    curses.init_pair(COLOR_HP_LOW, curses.COLOR_RED, -1)
+    curses.init_pair(COLOR_LOG_DAMAGE, curses.COLOR_RED, -1)
+    curses.init_pair(COLOR_LOG_NEUTRAL, curses.COLOR_WHITE, -1)
+
+
+MONSTER_COLORS = {
+    "Perturbado de Energia": COLOR_PERTURBADO,
+    "Mulher Afogada": COLOR_MULHER,
+    "O Deus da Morte": COLOR_BOSS,
+}
