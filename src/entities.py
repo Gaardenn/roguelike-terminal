@@ -337,3 +337,39 @@ def descend_floor(player, map_grid, current_floor):
     spawn_items(new_map, new_rooms, floor=next_floor)
 
     return new_map, new_rooms, new_monsters, next_floor
+
+RESPAWN_CHECK_INTERVAL = 15  # 04-geracao-mapas.md, secao 6
+
+
+def maybe_respawn_monster(map_grid, rooms, monsters, floor, turn_count):
+    """A cada RESPAWN_CHECK_INTERVAL turnos, spawna 1 novo monstro se a
+    quantidade viva estiver abaixo do maximo da faixa do andar
+    (04-geracao-mapas.md, secao 6). Retorna o monstro criado, ou None.
+    """
+    if turn_count & RESPAWN_CHECK_INTERVAL != 0:
+        return None
+
+    _min_range, max_range = FLOOR_MONSTER_RANGES[floor]
+
+    living_common_monsters = [m for m in monsters if m["name"] != "O Deus da Morte"]
+    if len(living_common_monsters) >= max_range:
+        return None
+
+    eligible_rooms = rooms[MIN_ROOM_INDEX_FOR_SPAWN:]
+    if not eligible_rooms:
+        return None
+
+    room = random.choice(eligible_rooms)
+    x, y = _find_free_tile_in_room(map_grid, room)
+    if x is None:
+        return None
+
+    weights = FLOOR_WEIGHTS[floor]
+    if random.random() < weights["perturbado"]:
+        monster = create_perturbado(x, y, floor=floor)
+    else:
+        monster = create_mulher_afogada(x, y, floor=floor)
+
+    map_grid[y][x]["occupant"] = monster
+    monsters.append(monster)
+    return monster

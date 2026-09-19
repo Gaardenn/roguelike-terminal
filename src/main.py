@@ -13,6 +13,7 @@ from render import (
     render_menu_screen,
     render_game_over_screen,
     render_victory_screen,
+    init_colors,
 )
 from map import generate_dungeon, is_walkable, get_occupant, move_occupant
 from input import (
@@ -37,6 +38,7 @@ from entities import (
     use_consumable,
     throw_item,
     descend_floor,
+    maybe_respawn_monster,
     INVENTORY_SIZE,
     TOTAL_FLOORS,
 )
@@ -189,6 +191,7 @@ def run_game(stdscr):
     current_floor = 1
     monsters = spawn_monsters(test_map, rooms, floor=current_floor)
     spawn_items(test_map, rooms, floor=current_floor)
+    turn_count = 0
 
     message_log = []
 
@@ -224,6 +227,7 @@ def run_game(stdscr):
                     test_map, rooms, monsters, current_floor = descend_floor(
                         player, test_map, current_floor
                     )
+                    turn_count = 0
                     push_message(f"Voce desce para o andar {current_floor}.")
                 turn_taken = False
             else:
@@ -238,6 +242,11 @@ def run_game(stdscr):
                 push_message(result)
 
         if turn_taken and running:
+            turn_count += 1
+            new_monster = maybe_respawn_monster(test_map, rooms, monsters, current_floor, turn_count)
+            if new_monster:
+                push_message(f"Algo se move nas sombras... ({new_monster['name']} apareceu)")
+            
             for monster in list(monsters):
                 gain_energy(monster)
                 while can_act(monster):
@@ -299,6 +308,7 @@ def main(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(False)
     stdscr.keypad(True)
+    init_colors()
 
     state = "menu"
 
