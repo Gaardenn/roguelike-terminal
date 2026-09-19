@@ -291,6 +291,11 @@ def show_victory(stdscr):
 
 
 def main(stdscr):
+    # Decisao de design (02-gdd.md, secao "Permadeath"): o jogo nao tem
+    # save/load. Cada partida e criada do zero em run_game() e descartada
+    # ao morrer ou vencer - nao ha nenhum arquivo de save sendo escrito
+    # em disco. "Reiniciar" (Enter na tela de derrota/vitoria) apenas
+    # inicia uma nova partida, sem qualquer continuidade com a anterior.
     curses.curs_set(0)
     stdscr.nodelay(False)
     stdscr.keypad(True)
