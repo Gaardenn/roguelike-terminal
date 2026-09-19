@@ -22,8 +22,11 @@ duas regiões:
 - **Status do jogador:** linhas 20-23 (4 linhas), colunas 0-39 (metade
   esquerda). Mostra HP atual/máximo, andar atual, e itens equipados.
 - **Log de mensagens:** linhas 20-23 (4 linhas), colunas 40-79 (metade
-  direita). Mostra as últimas 5 mensagens (`05-combate.md`, seção 6),
-  com quebra de linha/scroll simples dentro do espaço disponível.
+  direita). Mostra as mensagens mais recentes (`05-combate.md`, seção 6).
+  Cada mensagem é quebrada em múltiplas linhas se for mais longa que a
+  largura disponível (39 colunas), e o total de linhas visíveis (de
+  mensagens antigas ou quebradas) é limitado a 4, com as mais antigas
+  saindo primeiro.
 
 Exemplo de conteúdo do painel de status:
 ```

@@ -86,7 +86,9 @@ então fugir de fato depende da velocidade relativa entre os dois.
 ## 6. Feedback Visual/Textual do Combate
 
 O jogo mantém um **log de mensagens com histórico**, exibindo as últimas
-**5 mensagens** na área reservada da tela (ver `03-arquitetura.md`, HUD).
+**4 mensagens** na área reservada da tela (ver `08-interface.md`, seção 1).
+Mensagens muito longas quebram em múltiplas linhas visuais dentro do
+espaço disponível (ver `08-interface.md`, seção 1).
 
 Mensagens mais antigas saem da lista conforme novas são adicionadas
 (estrutura tipo fila/lista com tamanho máximo de 5).
