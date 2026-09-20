@@ -148,7 +148,9 @@ def test_coracao_reduces_damage_on_success():
 
     stdscr = FakeStdscr(key_to_return=ord("s"))
 
-    with patch("random.randint", return_value=0.0):  # sempre sucede (abaixo de qualquer fail_chance)
+    # fail_chance da 1a ativacao e 75%. Sucesso ocorre quando random() >= fail_chance,
+    # entao um valor alto (0.99) forca o sucesso.
+    with patch("random.random", return_value=0.99):
         final_damage, extra_message = handle_coracao_prompt(stdscr, player, damage=10)
 
     assert final_damage == 5  # metade de 10
@@ -164,7 +166,9 @@ def test_coracao_destroyed_on_failure():
 
     stdscr = FakeStdscr(key_to_return=ord("s"))
 
-    with patch("random.random", return_value=0.99):  # sempre falha (acima de 75%)
+    # fail_chance da 1a ativacao e 75%. Falha ocorre quando random() < fail_chance,
+    # entao um valor baixo (0.0) forca a falha.
+    with patch("random.random", return_value=0.0):
         final_damage, extra_message = handle_coracao_prompt(stdscr, player, damage=10)
 
     assert final_damage == 10  # dano nao reduzido
