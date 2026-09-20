@@ -192,7 +192,8 @@ def toggle_equip(player, slot_index):
     player["equipped"][key] = item
     if key == "coracao":
         player["coracao_uses"] = 0
-        return f"{item['name']} equipado."
+
+    return f"{item['name']} equipado."
 
 
 def use_consumable(player, slot_index):
