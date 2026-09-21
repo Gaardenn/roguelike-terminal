@@ -54,6 +54,11 @@ Monstros podem ter um campo adicional futuro `ai_typ` (ex: `"chase"`,
 `"idle"`) quando a IA for implementada — não é necessário defini-lo ainda,
 só reservar o espaço conceitual na estrutura.
 
+
+**Nota de balanceamento (4.2):** o HP base do jogador foi ajustado de 20
+para 28 após playtests mostrarem 0 vitórias em 5 partidas, com mortes
+recorrentes por cerco de múltiplos monstros. Ver `09-playtest-log.md`.
+
 ## 3. Arquitetura Geral
 
 O projeto usa uma arquitetura de **game loop simples**, sem ECS

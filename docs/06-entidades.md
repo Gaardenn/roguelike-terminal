@@ -76,9 +76,13 @@ tipos comuns muda conforme o andar:
 | Andar | Peso Perturbado de Energia | Peso Mulher Afogada |
 |-------|------------------------------|------------------------|
 | 1     | 70%                          | 30%                    |
-| 2     | 55%                          | 45%                    |
-| 3     | 40%                          | 60%                    |
-| 4     | 25%                          | 75% (+ chefe fixo)     |
+| 2     | 65%                          | 35%                    |
+| 3     | 55%                          | 45%                    |
+| 4     | 45%                          | 55% (+ chefe fixo)     |
+
+*(valores ajustados em 4.2 - Testes de Balanceamento, ver
+`09-playtest-log.md`: proporção original causava cercos frequentes de
+Mulher Afogada, levando a 0 vitórias em 5 partidas de teste)*
 
 Ao gerar os monstros de um andar (dentro da faixa de quantidade da tabela
 de `04-geracao-mapas.md`), cada monstro sorteado tem essa chance percentual
@@ -108,8 +112,9 @@ A entidade foge ativamente do jogador (move-se na direção opsota) quando
 seu HP cai abaixo de um limiar. Antes de atingir esse limiar, comporta-se
 normalmente conforme seu tipo base.
 
-**Usado por:** Mulher Afogada — passa a fugir quando seu HP cair, abaixo
-de **30% do `map_hp`** (ou seja, abaixo de ~4 HP, considerando `max_hp = 14`).
+**Usado por:** Mulher Afogada — passa a fugir quando seu HP cair abaixo
+de **40% do `map_hp`** (ajustado de 30% em 4.2 - Testes de Balanceamento,
+para reduzir a frequência de cercos em corredores; ver `09-playtest-log.md`).
 Isso significa que a Mulher Afogada tem, na prática, um comportamento
 **híbrido**: `chase` enquanto estiver saudável, e `flee` quando ferida.
 
