@@ -8,7 +8,7 @@ from items import TYPE_CONSUMABLE, TYPE_EQUIPABLE, TYPE_THROWABLE, ITEM_CICATRIZ
 
 INVENTORY_SIZE = 8
 ENERGY_THRESHOLD = 100
-FLEE_HP_THRESHOLD = 0.3  # 06-entidades.md, secao 5
+FLEE_HP_THRESHOLD = 0.4  # 06-entidades.md, secao 5 (ajustado no balanceamento 4.2)
 THROW_RANGE = 4
 
 FLOOR_MONSTER_RANGES = {
@@ -20,9 +20,9 @@ FLOOR_MONSTER_RANGES = {
 
 FLOOR_WEIGHTS = {
     1: {"perturbado": 0.70, "mulher": 0.30},
-    2: {"perturbado": 0.55, "mulher": 0.45},
-    3: {"perturbado": 0.40, "mulher": 0.60},
-    4: {"perturbado": 0.25, "mulher": 0.75},
+    2: {"perturbado": 0.65, "mulher": 0.35},
+    3: {"perturbado": 0.55, "mulher": 0.45},
+    4: {"perturbado": 0.45, "mulher": 0.55},
 }
 
 MIN_ROOM_INDEX_FOR_SPAWN = 2
@@ -50,7 +50,7 @@ def create_player(x, y):
     """Cria a entidade do jogador com atributos base e inventario vazio."""
     player = create_entity(
         name="Jogador", symbol="@", x=x, y=y,
-        hp=20, attack=4, defense=1, speed=100, is_player=True,
+        hp=28, attack=4, defense=1, speed=100, is_player=True,
     )
     player["inventory"] = [None] * INVENTORY_SIZE
     player["equipped"] = {"instrumental": None, "protecao": None, "coracao": None}
@@ -339,7 +339,7 @@ def descend_floor(player, map_grid, current_floor):
 
     return new_map, new_rooms, new_monsters, next_floor
 
-RESPAWN_CHECK_INTERVAL = 15  # 04-geracao-mapas.md, secao 6
+RESPAWN_CHECK_INTERVAL = 25  # 04-geracao-mapas.md, secao 6 (ajustado no balanceamento 4.2)
 
 
 def maybe_respawn_monster(map_grid, rooms, monsters, floor, turn_count):
