@@ -94,7 +94,10 @@ curses.error: addwstr() returned ERR
 ---
 
 ## Resumo Geral
-- **Terminais testados com sucesso:**
-- **Terminais com problemas:**
-- **Terminais não testados (pendência):**
+- **Terminais testados com sucesso:** Windows (cmd)
+- **Terminais com problemas:** Windows (PowerShell — cores inconsistentes), Linux (crash de tamanho de terminal)
+- **Terminais não testados (pendência):** Mac
 - **Problemas encontrados que precisam virar bug (4.5):**
+  1. Mensagem residual "Setup base OK..." piscando no canto superior esquerdo (sobrou da 3.1)
+  2. Jogo crasha (`curses.error: addwstr() returned ERR`) em terminais com janela menor que 80x24 — falta validação de tamanho mínimo no início do jogo
+  3. Cores inconsistentes no PowerShell (iten/Hp médio não aparecem, Perturbado de Energia invisível mesmo com cor diferente do fundo) — possível limitação do `windows-curses` com `use_default_colors()`
