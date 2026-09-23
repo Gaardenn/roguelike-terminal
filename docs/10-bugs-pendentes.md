@@ -36,12 +36,19 @@ Sobrou de um teste manual da 3.1 (Setup Base): `render_blank_screen` ainda
 tem `stdscr.addstr(0, 0, "Setup base OK - pressione ESC para sair")`,
 redesenhada a cada frame por cima do mapa. Precisa ser removida.
 
-## 6. Crash com terminal menor que 80x24 (4.3)
-O jogo assume tamanho fixo de tela (80 colunas x 24 linhas) e não valida
-o tamanho real da janela do terminal antes de rodar. Em janelas menores,
-`curses` lança `addwstr() returned ERR` e o jogo fecha com traceback.
-Precisa de uma checagem no início (`curses.LINES`, `curses.COLS`) com
-mensagem amigável pedindo para redimensionar, em vez de crashar.
+## 6. Crash com terminal menor que 81x25 (4.3)
+O jogo assume tamanho fixo de tela (80 colunas x 24 linhas), mas o
+`curses` na prática precisa de **81x25** para não travar (comportamento
+conhecido do curses: a ultima celula do canto inferior direito da janela
+nao pode ser escrita livremente sem tratamento especial, entao o jogo
+precisa de uma linha/coluna de folga). Confirmado nos testes de 4.3:
+exatamente 80x24 já falha; funciona a partir de 81x25. Janelas menores
+(ex: 60x20) e redimensionamento em tempo real para abaixo do mínimo
+também causam o mesmo crash (`addwstr() returned ERR`).
+Precisa de uma checagem no início (`curses.LINES >= 25` e `curses.COLS >= 81`) com mensagem amigável pedindo para redimensionar,
+em vez de crashar - e essa checagem deveria rodar continuamente durante
+o jogo, não só na abertura, já que redimensionar em tempo real também
+quebra.
 
 ## 7. Cores inconsistentes no PowerShell (Windows) (4.3)
 Alguns pares de cor não aparecem corretamente no PowerShell (itens e HP
@@ -50,3 +57,23 @@ cor diferente do fundo.) Suspeita: limitação do `windows-curses` com
 `use_default_colors()` nesse terminal específico. Precisa de investigação
 mais profunda — pode não ter solução 100% garantida entre todos os
 terminais Windows.
+
+
+## 8. Respawn periódico disparando com mais frequência que o esperado (4.3)
+Relato no teste de tamanho de janela: monstros parecem respawnar a cada
+poucos turnos (relatado como "de 2 em 2"), não a cada 25 turnos como
+configurado em `RESPAWN_CHECK_INTERVAL` (`src/entities.py`).
+
+**Hipóteste a investigar:** o contador `turn_count` em `main.py` só deveria
+incrementar uma vez por turno real do jogador (dentro do bloco
+`if turn_taken and running:`). Possíveis causas a checar:
+- Alguma chamada duplicada de `maybe_respawn_monster` em outro ponto do
+  código além do loop principal.
+- O jogador percebendo turnos passando rápido (ex: segurando uma tecla
+  de movimento) sem perceber que já passaram 25 ações, gerando uma falsa
+  impressão de frequência maior.
+- `turn_count` sendo resetado incorretamente em algum outro fluxo (ex:
+  ao abrir/fechar o inventário, que não deveria mexer no contador).
+
+Precisa de investigação com prints/logs de debug temporários na 4.5,
+rastreando o valor de `turn_count` a cada chamada.
