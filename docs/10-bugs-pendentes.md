@@ -77,3 +77,20 @@ incrementar uma vez por turno real do jogador (dentro do bloco
 
 Precisa de investigação com prints/logs de debug temporários na 4.5,
 rastreando o valor de `turn_count` a cada chamada.
+
+
+## 9. Crash em `curses.curs_set(0)` em terminais sem suporte a esse controle (4.3)
+Testado com `TERM=vt100`, o jogo crasha logo no início, na chamada
+`curses.curs_set(0)` em `main.py` (usada para esconder o cursor). Isso
+acontece porque `curs_set()` lança `curses.error` quando o terminal não
+suporta a visibilidade de cursor solicitada — não é especificamente sobre
+cor, mas impediu completar o teste 4.3 "com/sem suporte a cores"
+(`13-teste-cores.md`).
+
+**Correção sugerida:** envolver a chamada em `try/except curses.error:
+pass`, já que esconder o cursor é algo "bom ter" mas não essencial pro
+jogo funcionar.
+
+**Pendência adicional:** depois de corrigir esse crash, refazer o teste
+de "com/sem suporte a cores" (`13-teste-cores.md`), que não pôde ser
+completado por causa desse bug.

@@ -58,4 +58,5 @@ por causa dos bugs de cor já registrados)*
 ## Resumo Geral
 - **Jogo funciona sem suporte a cores?** Não foi possível testar
 - **Erros encontrados:** Crash ao iniciar jogo
-- **Novos bugs a registrar:** Nenhum
+- **Novos bugs a registrar:** Sim — ver bug #9 em `10-bugs-pendentes.md`
+  (crash em `curses.curs_set(0)`, não relacionado a cor em si, mas que impediu completar este teste)
