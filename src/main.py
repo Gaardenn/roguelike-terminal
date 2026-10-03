@@ -13,6 +13,7 @@ from render import (
     render_menu_screen,
     render_game_over_screen,
     render_victory_screen,
+    render_resize_warning,
     init_colors,
 )
 from map import generate_dungeon, is_walkable, get_occupant, move_occupant
@@ -51,6 +52,9 @@ MOVE_DELTAS = {
     ACTION_MOVE_LEFT: (-1, 0),
     ACTION_MOVE_RIGHT: (1, 0),
 }
+
+MIN_COLS = 81
+MIN_LINES = 25
 
 
 def move_player(player, dx, dy, map_grid, monsters):
@@ -189,6 +193,32 @@ def open_inventory(stdscr, player, map_grid, monsters):
 BOSS_NAME = "O Deus da Morte"
 
 
+def ensure_terminal_size(stdscr):
+    """Bloqueia mostrando aviso enquanto o terminal estiver menor que o
+    minimo necessario (bug #6, 4.5). Retorna False se o jogador optou
+    por sair durante o aviso, True assim que o tamanho estiver OK."""
+    height, width = stdscr.getmaxyx()
+
+    if height >= MIN_LINES and width >= MIN_COLS:
+        return True
+
+    stdscr.nodelay(True)
+    try:
+        while True:
+            height, width = stdscr.getmaxyx()
+            if height >= MIN_LINES and width >= MIN_COLS:
+                return True
+
+            render_resize_warning(stdscr, width, height, MIN_COLS, MIN_LINES)
+
+            key = stdscr.getch()
+            if key in (ord("q"), ord("Q")):
+                return False
+
+            curses.napms(150)
+    finally:
+        stdscr.nodelay(False)
+
 def run_game(stdscr):
     """Executa uma partida completa. Retorna ('defeat', andar) ou ('victory', andar) ou ('menu', andar)."""
     test_map, rooms, player_start = generate_dungeon()
@@ -208,6 +238,9 @@ def run_game(stdscr):
 
     running = True
     while running:
+        if not ensure_terminal_size(stdscr):
+            return "menu", current_floor
+        
         render_blank_screen(stdscr)
         render_map(stdscr, test_map)
         render_items(stdscr, test_map)
@@ -315,10 +348,16 @@ def main(stdscr):
     # ao morrer ou vencer - nao ha nenhum arquivo de save sendo escrito
     # em disco. "Reiniciar" (Enter na tela de derrota/vitoria) apenas
     # inicia uma nova partida, sem qualquer continuidade com a anterior.
-    curses.curs_set(0)
+    try:
+        curses.curs_set(0)
+    except curses.error:
+        pass  # terminal nao suporta controle de visibilidade do cursor (bug #9) - ignora e segue
     stdscr.nodelay(False)
     stdscr.keypad(True)
     init_colors()
+
+    if not ensure_terminal_size(stdscr):
+        return
 
     state = "menu"
 
