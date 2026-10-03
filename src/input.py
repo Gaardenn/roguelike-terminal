@@ -23,6 +23,8 @@ KEY_MAP = {
     10: ACTION_CONFIRM,   # Enter (Linux/Mac)
     13: ACTION_CONFIRM,   # Enter (Windows)
     27: ACTION_CANCEL,    # ESC
+    ord("q"): ACTION_CANCEL,  # alternativa ao ESC (4.4 - usabilidade)
+    ord("Q"): ACTION_CANCEL,
 }
 
 

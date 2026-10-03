@@ -128,7 +128,7 @@ def handle_coracao_prompt(stdscr, player, damage):
 
 def render_inventory_screen(stdscr, player, selected_index):
     stdscr.clear()
-    stdscr.addstr(0, 0, "INVENTARIO - Enter: usar/equipar/arremessar | Esc: fechar")
+    stdscr.addstr(0, 0, "INVENTARIO - Enter: usar/equipar/arremessar | Esc/q: fechar")
 
     for i in range(INVENTORY_SIZE):
         item = player["inventory"][i]
@@ -144,6 +144,13 @@ def render_inventory_screen(stdscr, player, selected_index):
 
         stdscr.addstr(2 + i, 0, line)
 
+    selected_item = player["inventory"][selected_index]
+    stdscr.addstr(2 + INVENTORY_SIZE + 1, 0, "-" * 60)
+    if selected_item is not None:
+        stdscr.addstr(2 + INVENTORY_SIZE + 2, 0, selected_item["description"][:70])
+    else:
+        stdscr.addstr(2 + INVENTORY_SIZE + 2, 0, "(slot vazio)")
+
     stdscr.refresh()
 
 
@@ -156,7 +163,7 @@ def open_inventory(stdscr, player, map_grid, monsters):
         render_inventory_screen(stdscr, player, selected)
         key = stdscr.getch()
 
-        if key == 27:
+        if key in CANCEL_KEYS:
             break
         elif key == curses.KEY_UP:
             selected = (selected - 1) % INVENTORY_SIZE
@@ -269,13 +276,16 @@ def run_game(stdscr):
                 return "victory", current_floor
 
 
+CANCEL_KEYS = (27, ord("q"), ord("Q"))
+
+
 def show_menu(stdscr):
     render_menu_screen(stdscr)
     while True:
         key = stdscr.getch()
         if key in (10, 13):
             return "start"
-        if key == 27:
+        if key in CANCEL_KEYS:
             return "quit"
 
 
@@ -285,7 +295,7 @@ def show_game_over(stdscr, floor_reached):
         key = stdscr.getch()
         if key in (10, 13):
             return "restart"
-        if key == 27:
+        if key in CANCEL_KEYS:
             return "quit"
 
 
@@ -295,7 +305,7 @@ def show_victory(stdscr):
         key = stdscr.getch()
         if key in (10, 13):
             return "restart"
-        if key == 27:
+        if key in CANCEL_KEYS:
             return "quit"
 
 
