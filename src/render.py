@@ -95,18 +95,26 @@ def render_log(stdscr, messages):
         stdscr.addstr(LOG_START_Y + i, LOG_START_X, line)
 
 def render_menu_screen(stdscr):
-    """Tela de Menu Inicial (estados-jogo.drawio)."""
+    """Tela de Menu Inicial (estados-jogo.drawio), com resumo de controles
+    (melhoria de usabilidade, 4.4)."""
     stdscr.clear()
     lines = [
         "ROGUELIKE DE TERMINAL",
         "",
         "Desca os 4 andares da masmorra e derrote O Deus da Morte.",
         "",
+        "CONTROLES:",
+        "  Setas       - Mover (mover contra um monstro = atacar)",
+        "  Espaco      - Esperar um turno parado",
+        "  i           - Abrir/fechar inventario",
+        "  Enter       - Confirmar (usar/equipar item, iniciar jogo)",
+        "  Esc ou q    - Cancelar / Sair",
+        "",
         "Enter - Iniciar jogo",
-        "Esc - Sair",
+        "Esc ou q - Sair",
     ]
     for i, line in enumerate(lines):
-        stdscr.addstr(5 + i, 10, line)
+        stdscr.addstr(3 + i, 10, line)
     stdscr.refresh()
 
 
