@@ -167,14 +167,19 @@ COLORS_ENABLED = False
 def init_colors():
     """Inicializa os pares de cor do curses (08-interface.md, secao 2),
     degradando para modo monocromatico se o terminal nao suportar cor
-    (bug #7/#9 - terminais como vt100 nao tem suporte a cor nenhum)."""
+    (bug #7/#9 - terminais como vt100 podem "aceitar" start_color() mas
+    ter zero cores disponiveis de verdade)."""
     global COLORS_ENABLED
 
     try:
         curses.start_color()
     except curses.error:
         COLORS_ENABLED = False
-        return  # terminal sem suporte a cor nenhum - segue monocromatico
+        return
+    
+    if not curses.has_colors() or curses.COLORS < 1:
+        COLORS_ENABLED = False
+        return  # terminal "aceita" start_color() mas nao tem cores de verdade
 
     try:
         curses.use_default_colors()
@@ -196,7 +201,7 @@ def init_colors():
         curses.init_pair(COLOR_LOG_DAMAGE, curses.COLOR_RED, background)
         curses.init_pair(COLOR_LOG_NEUTRAL, curses.COLOR_WHITE, background)
         COLORS_ENABLED = True
-    except curses.error:
+    except (curses.error, ValueError):
         COLORS_ENABLED = False
 
 
