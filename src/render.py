@@ -28,8 +28,7 @@ def render_map(stdscr, map_grid):
     for y, row in enumerate(map_grid):
         for x, tile in enumerate(row):
             color = COLOR_STAIRS if tile["type"] == "stairs" else COLOR_WALL if tile["type"] == "wall" else 0
-            attr = curses.color_pair(color) if color else 0
-            stdscr.addstr(y, x, tile["symbol"], attr)
+            stdscr.addstr(y, x, tile["symbol"], color_attr(color))
 
 def render_entity(stdscr, entity):
     """Desenha uma entidade (jogador ou monstro) por cima do mapa, com cor."""
@@ -38,8 +37,7 @@ def render_entity(stdscr, entity):
     else:
         color = MONSTER_COLORS.get(entity["name"], 0)
 
-    attr = curses.color_pair(color) if color else 0
-    stdscr.addstr(entity["y"], entity["x"], entity["symbol"], attr)
+    stdscr.addstr(entity["y"], entity["x"], entity["symbol"], color_attr(color))
 
 
 def render_items(stdscr, map_grid):
@@ -47,7 +45,7 @@ def render_items(stdscr, map_grid):
     for y, row in enumerate(map_grid):
         for x, tile in enumerate(row):
             if tile["item"] is not None:
-                stdscr.addstr(y, x, tile["item"]["symbol"], curses.color_pair(COLOR_ITEM))
+                stdscr.addstr(y, x, tile["item"]["symbol"], color_attr(COLOR_ITEM))
 
 STATUS_START_Y = 21
 LOG_START_Y = 21
@@ -70,7 +68,7 @@ def render_status(stdscr, player, floor):
         hp_color = COLOR_HP_LOW
     
     stdscr.addstr(STATUS_START_Y, 0, "HP: ")
-    stdscr.addstr(f"{player['hp']}/{player['max_hp']}", curses.color_pair(hp_color))
+    stdscr.addstr(f"{player['hp']}/{player['max_hp']}", color_attr(hp_color))
     stdscr.addstr(f"    Andar: {floor}")
 
     equipped_names = [
@@ -163,23 +161,50 @@ COLOR_LOG_DAMAGE = 11
 COLOR_LOG_NEUTRAL = 12
 
 
-def init_colors():
-    """Inicializa os pares de cor do curses (08-interface.md, secao 2)."""
-    curses.start_color()
-    curses.use_default_colors()
+COLORS_ENABLED = False
 
-    curses.init_pair(COLOR_PLAYER, curses.COLOR_CYAN, -1)
-    curses.init_pair(COLOR_WALL, curses.COLOR_BLACK, -1)
-    curses.init_pair(COLOR_STAIRS, curses.COLOR_YELLOW, -1)
-    curses.init_pair(COLOR_PERTURBADO, curses.COLOR_MAGENTA, -1)
-    curses.init_pair(COLOR_MULHER, curses.COLOR_BLUE, -1)
-    curses.init_pair(COLOR_BOSS, curses.COLOR_RED, -1)
-    curses.init_pair(COLOR_ITEM, curses.COLOR_YELLOW, -1)
-    curses.init_pair(COLOR_HP_HIGH, curses.COLOR_GREEN, -1)
-    curses.init_pair(COLOR_HP_MID, curses.COLOR_YELLOW, -1)
-    curses.init_pair(COLOR_HP_LOW, curses.COLOR_RED, -1)
-    curses.init_pair(COLOR_LOG_DAMAGE, curses.COLOR_RED, -1)
-    curses.init_pair(COLOR_LOG_NEUTRAL, curses.COLOR_WHITE, -1)
+
+def init_colors():
+    """Inicializa os pares de cor do curses (08-interface.md, secao 2),
+    degradando para modo monocromatico se o terminal nao suportar cor
+    (bug #7/#9 - terminais como vt100 nao tem suporte a cor nenhum)."""
+    global COLORS_ENABLED
+
+    try:
+        curses.start_color()
+    except curses.error:
+        COLORS_ENABLED = False
+        return  # terminal sem suporte a cor nenhum - segue monocromatico
+
+    try:
+        curses.use_default_colors()
+        background = -1
+    except curses.error:
+        background = curses.COLOR_BLACK  # fallback: fundo preto explicito
+    
+    try:
+        curses.init_pair(COLOR_PLAYER, curses.COLOR_CYAN, background)
+        curses.init_pair(COLOR_WALL, curses.COLOR_BLACK, background)
+        curses.init_pair(COLOR_STAIRS, curses.COLOR_YELLOW, background)
+        curses.init_pair(COLOR_PERTURBADO, curses.COLOR_MAGENTA, background)
+        curses.init_pair(COLOR_MULHER, curses.COLOR_BLUE, background)
+        curses.init_pair(COLOR_BOSS, curses.COLOR_RED, background)
+        curses.init_pair(COLOR_ITEM, curses.COLOR_YELLOW, background)
+        curses.init_pair(COLOR_HP_HIGH, curses.COLOR_GREEN, background)
+        curses.init_pair(COLOR_HP_MID, curses.COLOR_YELLOW, background)
+        curses.init_pair(COLOR_HP_LOW, curses.COLOR_RED, background)
+        curses.init_pair(COLOR_LOG_DAMAGE, curses.COLOR_RED, background)
+        curses.init_pair(COLOR_LOG_NEUTRAL, curses.COLOR_WHITE, background)
+        COLORS_ENABLED = True
+    except curses.error:
+        COLORS_ENABLED = False
+
+
+def color_attr(color_id):
+    """Retorna o atributo de cor, ou 0 (sem cor) se o terminal nao suportar."""
+    if not COLORS_ENABLED or not color_id:
+        return 0
+    return curses.color_pair(color_id)
 
 
 MONSTER_COLORS = {
