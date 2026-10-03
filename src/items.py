@@ -13,11 +13,26 @@ TYPE_EQUIPABLE = "equipable"
 TYPE_THROWABLE = "throwable"
 
 ITEM_TEMPLATES = {
-    ITEM_CICATRIZANTE: {"name": "Cicatrizante", "symbol": "!", "type": TYPE_CONSUMABLE},
-    ITEM_INSTRUMENTAL: {"name": "Instrumental", "symbol": "/", "type": TYPE_EQUIPABLE},
-    ITEM_MACHADINHA: {"name": "Machadinha", "symbol": "\\", "type": TYPE_THROWABLE},
-    ITEM_PROTECAO: {"name": "Protecao Leve", "symbol": "[", "type": TYPE_EQUIPABLE},
-    ITEM_CORACAO: {"name": "Coracao Pulsante", "symbol": "h", "type": TYPE_EQUIPABLE},
+    ITEM_CICATRIZANTE: {
+        "name": "Cicatrizante", "symbol": "!", "type": TYPE_CONSUMABLE,
+        "description": "Cura 4-18HP (em voce mesmo).",
+    },
+    ITEM_INSTRUMENTAL: {
+        "name": "Instrumental", "symbol": "/", "type": TYPE_EQUIPABLE,
+        "description": "Equipavel. Reduz em 25% a chance de falha de outros itens.",
+    },
+    ITEM_MACHADINHA: {
+        "name": "Machadinha", "symbol": "\\", "type": TYPE_THROWABLE,
+        "description": "Arremessa 1-6 de dano no inimigo mais proximo (alcance 4).",
+    },
+    ITEM_PROTECAO: {
+        "name": "Protecao Leve", "symbol": "[", "type": TYPE_EQUIPABLE,
+        "description": "Equipavel. Concede +5 de defesa.",
+    },
+    ITEM_CORACAO: {
+        "name": "Coracao Pulsante", "symbol": "h", "type": TYPE_EQUIPABLE,
+        "description": "Equipavel. Reduz dano recebido pela metade (risco de quebrar).",
+    },
 }
 
 ALL_ITEM_IDS = list(ITEM_TEMPLATES.keys())
@@ -38,6 +53,7 @@ def create_item(item_id):
         "name": template["name"],
         "symbol": template["symbol"],
         "type": template["type"],
+        "description": template["description"],
     }
 
 
