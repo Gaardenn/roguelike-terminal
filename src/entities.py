@@ -347,7 +347,7 @@ def maybe_respawn_monster(map_grid, rooms, monsters, floor, turn_count):
     quantidade viva estiver abaixo do maximo da faixa do andar
     (04-geracao-mapas.md, secao 6). Retorna o monstro criado, ou None.
     """
-    if turn_count & RESPAWN_CHECK_INTERVAL != 0:
+    if turn_count % RESPAWN_CHECK_INTERVAL != 0:
         return None
 
     _min_range, max_range = FLOOR_MONSTER_RANGES[floor]
