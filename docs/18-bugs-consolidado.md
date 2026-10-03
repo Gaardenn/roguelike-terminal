@@ -18,14 +18,16 @@ terminais pequenos. (Origem: 4.3, bug #6)
 ### C2. Crash em `curses.curs_set(0)` em terminais sem suporte
 Jogo fecha ao iniciar em terminais como `vt100`. (Origem: 4.3, bug #9)
 
-### C3. Respawn periódico disparando com mais frequência que o esperado
-Quebra o balanceamento feito na 4.2 — monstros voltam a se acumular
-rápido demais, o que pode estar relacionado ao bug de "monstro
-teleportando perto do jogador". (Origem: 4.3, bug #8, relacionado ao bug #4)
+### C3. ~~Respawn periódico disparando com mais frequência que o esperado~~ — RESOLVIDO
+Causa raiz encontrada: `maybe_respawn_monster` usava o operador bit a bit
+`&` em vez do operador de módulo: `%` na checagem do intervalo
+(`turn_count & RESPAWN_CHECK_INTERVAL` ao invés de
+`turn_count % RESPAWN_CHECK_INTERVAL`). Corrigido em 4.5.
 
-### C4. Monstro aparentando "teleportar" perto do jogador
-Possível mesma causa raiz do C3 (respawn sem checar distância do
-jogador atual). (Origem: playtest 4.2, bug #4)
+### C4. ~~Monstro aparentando "teleportar" perto do jogador~~ — RESOLVIDO (mesma causa do C3)
+Era o mesmo bug do C3: respawn disparando com frequência muito maior que
+o esperado, não um problema de distância/teleporte de verdade. Resolvido
+junto com C3.
 
 ---
 
