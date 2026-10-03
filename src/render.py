@@ -187,3 +187,16 @@ MONSTER_COLORS = {
     "Mulher Afogada": COLOR_MULHER,
     "O Deus da Morte": COLOR_BOSS,
 }
+
+def render_resize_warning(stdscr, current_width, current_height, min_width, min_height):
+    """Exibe aviso de terminal pequeno demais (bug #6, 4.5)."""
+    stdscr.clear()
+    try:
+        stdscr.addstr(0, 0, "Terminal muito pequeno!")
+        stdscr.addstr(1, 0, f"Tamanho minimo necessario: {min_width}x{min_height}")
+        stdscr.addstr(2, 0, f"Tamanho atual: {current_width}x{current_height}")
+        stdscr.addstr(3, 0, "Redimensione a janela do terminal.")
+        stdscr.addstr(4, 0, "Pressione Q para sair.")
+    except curses.error:
+        pass  # mesmo o aviso pode nao caber num terminal extremamente pequeno - ignora
+    stdscr.refresh()
