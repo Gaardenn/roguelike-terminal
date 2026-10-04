@@ -96,19 +96,27 @@ def move_player(player, dx, dy, map_grid, monsters):
     return None
 
 
-def handle_coracao_prompt(stdscr, player, damage):
+PROMPT_ROW = 21  # linah inteira dedicada ao prompt, sem colidir com log/status (bug M1)
+
+
+def handle_coracao_prompt(stdscr, player, damage, redraw=None):
     """Oferece a opcao de espremer o Coracao Pulsante ao levar dano
-    (07-itens.md, secao 5). Retorna (dano final, mensagem_extra)."""
+    (07-itens.md, secao 5). Redesenha a tela antes de perguntar, para
+    que o jogador veja o estado atualizado (bug M1). Retorna
+    (dano final, mensagem_extra)."""
     coracao = player["equipped"].get("coracao")
     if coracao is None:
         return damage, ""
 
-    stdscr.addstr(22, 41, "Espremer Coracao Pulsante? (S/N)"[:38])
+    if redraw is not None:
+        redraw()
+
+    stdscr.addstr(PROMPT_ROW, 0, " " * 79)
+    stdscr.addstr(PROMPT_ROW, 0, "Espremer Coracao Pulsante? (S/N)")
     stdscr.refresh()
 
-    curses.flushinp()  # descarta teclas pressionadas antes do prompt aparecer (bug M1)
+    curses.flushinp()
     key = stdscr.getch()
-    stdscr.addstr(22, 41, " " * 38)
 
     if key not in (ord("s"), ord("S")):
         return damage, ""
@@ -237,20 +245,26 @@ def run_game(stdscr):
         if msg:
             message_log.append(msg)
 
+    def redraw_game_screen():
+        """Redesenha a tela inteira com o estado atual - usado tambem antes
+        de prompts modais (ex: Coracao Pulsante), para garantir que o
+        jogador ve o movimento/ataque mais recente antes de decidir (bug M1)."""
+        render_blank_screen(stdscr)
+        render_map(stdscr, test_map)
+        render_items(stdscr, test_map)
+        for m in monsters:
+            render_entity(stdscr, m)
+        render_entity(stdscr, player)
+        render_status(stdscr, player, current_floor)
+        render_log(stdscr, message_log)
+        stdscr.refresh()
+
     running = True
     while running:
         if not ensure_terminal_size(stdscr):
             return "menu", current_floor
         
-        render_blank_screen(stdscr)
-        render_map(stdscr, test_map)
-        render_items(stdscr, test_map)
-        for monster in monsters:
-            render_entity(stdscr, monster)
-        render_entity(stdscr, player)
-        render_status(stdscr, player, current_floor)
-        render_log(stdscr, message_log)
-        stdscr.refresh()
+        redraw_game_screen()
 
         action = get_player_action(stdscr)
         turn_taken = False
@@ -293,7 +307,7 @@ def run_game(stdscr):
                 while can_act(monster):
                     message, player_died = monster_take_turn(
                         monster, player, test_map,
-                        on_player_damage=lambda dmg: handle_coracao_prompt(stdscr, player, dmg),
+                        on_player_damage=lambda dmg: handle_coracao_prompt(stdscr, player, dmg, redraw_game_screen),
                     )
                     consume_energy(monster)
 
