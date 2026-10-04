@@ -18,9 +18,6 @@ def render_blank_screen(stdscr):
     for y in range(MAP_HEIGHT + 1, SCREEN_HEIGHT):
         stdscr.addstr(y, 40, "|")
 
-    # Mensagem temporária, só pra confirmar que a tela está renderizando
-    stdscr.addstr(0, 0, "Setup base OK - pressione ESC para sair")
-
     stdscr.refresh()
 
 def render_map(stdscr, map_grid):
