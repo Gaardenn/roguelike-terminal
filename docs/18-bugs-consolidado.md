@@ -33,16 +33,16 @@ junto com C3.
 
 ## 🟡 Médio
 
-### M1. Prompt do Coração Pulsante inconsistente
+### M1. ~~Prompt do Coração Pulsante inconsistente~~ — RESOLVIDO
 Às vezes não aparece ou parece capturar tecla errada — suspeita de
 buffer de input acumulado. Afeta uma mecânica central (mas não crasha).
 (Origem: playtest 4.2, bug #3)
 
-### M2. Linha "Equipado" corta/some com muitos itens
+### M2. ~~Linha "Equipado" corta/some com muitos itens~~ — RESOLVIDO
 Informação importante fica ilegível quando o jogador tem vários itens
 equipados. (Origem: playtest 4.2, bug #2)
 
-### M3. Paredes pouco visíveis (contrate de cor)
+### M3. ~~Paredes pouco visíveis (contrate de cor)~~ — RESOLVIDO
 Dificulta a leitura do mapa, mas o jogo continua jogável. (Origem:
 playtest 4.2, bug #1)
 
