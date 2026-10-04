@@ -27,8 +27,13 @@ def render_map(stdscr, map_grid):
     """Desenha o grid do mapa na tela, linha por linha, com cores."""
     for y, row in enumerate(map_grid):
         for x, tile in enumerate(row):
-            color = COLOR_STAIRS if tile["type"] == "stairs" else COLOR_WALL if tile["type"] == "wall" else 0
-            stdscr.addstr(y, x, tile["symbol"], color_attr(color))
+            if tile["type"] == "stairs":
+                attr = color_attr(COLOR_STAIRS)
+            elif tile["type"] == "wall":
+                attr = color_attr(COLOR_WALL) | curses.A_DIM  # cinza (branco + dim) em vez de preto
+            else:
+                attr = 0
+            stdscr.addstr(y, x, tile["symbol"], attr)
 
 def render_entity(stdscr, entity):
     """Desenha uma entidade (jogador ou monstro) por cima do mapa, com cor."""
@@ -54,10 +59,16 @@ LOG_WIDTH = 39  # colunas 41 a 79 (borda direita da tela de 80 colunas)
 LOG_MAX_LINES = 4  # 08-interface.md: area de log tem 4 linhas uteis (linhas 20-23)
 
 
+STATUS_WIDTH = 39
+STATUS_MAX_LINES = 4
+
+
 def render_status(stdscr, player, floor):
-    """Desenha o painel de status: HP, andar e itens equipados (08-interface.md, secao 1)."""
+    """Desenha o painel de status: HP, andar e itens equipados, com
+    quebra de linha para a lista de equipados (08-interface.md, secao 1;
+    correcao do bug M2 em 4.5)."""
     for i in range(4):
-        stdscr.addstr(STATUS_START_Y + i, 0, " " * 40)
+        stdscr.addstr(STATUS_START_Y + i, 0, " " * STATUS_WIDTH)
 
     hp_ratio = player["hp"] / player["max_hp"] if player["max_hp"] else 0
     if hp_ratio > 0.6:
@@ -74,8 +85,13 @@ def render_status(stdscr, player, floor):
     equipped_names = [
         item["name"] for item in player["equipped"].values() if item is not None
     ]
-    equipped_text = ", ".join(equipped_names) if equipped_names else "nenhum"
-    stdscr.addstr(STATUS_START_Y + 1, 0, f"Equipado: {equipped_text}"[:39])
+    equipped_text = "Equipado: " + (", ".join(equipped_names) if equipped_names else "nenhum")
+
+    wrapped_lines = textwrap.wrap(equipped_text, STATUS_WIDTH) or [""]
+    available_lines = STATUS_MAX_LINES - 1  # uma linha ja usada pelo HP/andar
+
+    for i, line in enumerate(wrapped_lines[:available_lines]):
+        stdscr.addstr(STATUS_START_Y + 1 + i, 0, line)
 
 
 def render_log(stdscr, messages):
@@ -189,7 +205,7 @@ def init_colors():
     
     try:
         curses.init_pair(COLOR_PLAYER, curses.COLOR_CYAN, background)
-        curses.init_pair(COLOR_WALL, curses.COLOR_BLACK, background)
+        curses.init_pair(COLOR_WALL, curses.COLOR_WHITE, background)  # usado com A_DIM para parecer cinza (bug M3)
         curses.init_pair(COLOR_STAIRS, curses.COLOR_YELLOW, background)
         curses.init_pair(COLOR_PERTURBADO, curses.COLOR_MAGENTA, background)
         curses.init_pair(COLOR_MULHER, curses.COLOR_BLUE, background)
