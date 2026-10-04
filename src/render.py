@@ -30,7 +30,7 @@ def render_map(stdscr, map_grid):
             if tile["type"] == "stairs":
                 attr = color_attr(COLOR_STAIRS)
             elif tile["type"] == "wall":
-                attr = color_attr(COLOR_WALL) | curses.A_DIM  # cinza (branco + dim) em vez de preto
+                attr = color_attr(COLOR_WALL) | curses.A_BOLD  # preto + negrito = cinza visivel (bug M3)
             else:
                 attr = 0
             stdscr.addstr(y, x, tile["symbol"], attr)
@@ -205,7 +205,7 @@ def init_colors():
     
     try:
         curses.init_pair(COLOR_PLAYER, curses.COLOR_CYAN, background)
-        curses.init_pair(COLOR_WALL, curses.COLOR_WHITE, background)  # usado com A_DIM para parecer cinza (bug M3)
+        curses.init_pair(COLOR_WALL, curses.COLOR_BLACK, background)  # usado com A_BOLD para virar cinza (bug M3)
         curses.init_pair(COLOR_STAIRS, curses.COLOR_YELLOW, background)
         curses.init_pair(COLOR_PERTURBADO, curses.COLOR_MAGENTA, background)
         curses.init_pair(COLOR_MULHER, curses.COLOR_BLUE, background)
