@@ -50,7 +50,7 @@ def create_player(x, y):
     """Cria a entidade do jogador com atributos base e inventario vazio."""
     player = create_entity(
         name="Jogador", symbol="@", x=x, y=y,
-        hp=28, attack=4, defense=1, speed=100, is_player=True,
+        hp=28, attack=6, defense=2, speed=100, is_player=True,
     )
     player["inventory"] = [None] * INVENTORY_SIZE
     player["equipped"] = {"instrumental": None, "protecao": None, "coracao": None}
@@ -82,8 +82,8 @@ def create_mulher_afogada(x, y, floor=1):
     return create_entity(
         name="Mulher Afogada", symbol="w", x=x, y=y,
         hp=_scale_for_floor(14, floor),
-        attack=_scale_for_floor(5, floor),
-        defense=2, speed=100, ai_type="chase",
+        attack=_scale_for_floor(4, floor),
+        defense=1, speed=100, ai_type="chase",
     )
 
 
@@ -91,7 +91,7 @@ def create_deus_da_morte(x, y):
     """Cria O Deus da Morte / Parasita de Dimensoes, chefe final (06-entidades.md, secao 3)."""
     return create_entity(
         name="O Deus da Morte", symbol="D", x=x, y=y,
-        hp=60, attack=12, defense=4, speed=120, ai_type="chase",
+        hp=45, attack=9, defense=4, speed=100, ai_type="chase",
     )
 
 
