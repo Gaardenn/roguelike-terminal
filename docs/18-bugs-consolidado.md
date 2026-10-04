@@ -54,9 +54,16 @@ playtest 4.2, bug #1)
 Sobra visual no canto superior esquerdo, não afeta jogabilidade.
 (Origem: 4.3, bug #5)
 
-### CO2. Cores inconsistentes no PowerShell
-Limitação de compatibilidade específica de terminal — correção pode ser
-parcial. (Origem: 4.3, bug #7)
+### CO2. Cores inconsistentes no PowerShell — LIMITAÇÃO CONHECIDA (não corrigido)
+Após investigação, não há uma correção de código confiável para esse
+caso: é uma limitação de compatibilidade do `windows-curses` com o
+PowerShell especificamente (suporte a cor historicamente instável nesse
+terminal). O jogo já degrada graciosamente para monocromático em
+terminais sem suporte a cor nenhum (ver correção dos bugs C1/C2 em 4.5),
+mas o PowerShell "finge" ter suporte parcial, o que impede essa
+degradação de entrar em ação. Recomendação: jogar via `cmd` ou um
+terminal Linux/Mac para melhor experiência visual. Documentado como
+limitação conhecida, não como bug a ser corrigido.
 
 ---
 
