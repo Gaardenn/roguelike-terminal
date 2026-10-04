@@ -36,8 +36,8 @@ aproximou). Não persegue de forma deliberada.
 |------------|-------------|
 | `symbol`   | `w`         |
 | `hp`       | 14          |
-| `attack`   | 5           |
-| `defense`  | 2           |
+| `attack`   | 4 (ajustado de 5 em 4.5, apos feedback externo confirmar dificuldade excessiva) |
+| `defense`  | 1 (ajustado de 2 em 4.5) |
 | `speed`    | 100         |
 | `ai_type`  | `"chase"`   |
 
@@ -56,10 +56,10 @@ finais (3 e 4).
 | Atributo   | Valor       |
 |------------|-------------|
 | `symbol`   | `D`         |
-| `hp`       | 60          |
-| `attack`   | 12          |
+| `hp`       | 45 (ajustado de 60 em 4.5) |
+| `attack`   | 9 (ajustado de 12 em 4.5)  |
 | `defense`  | 4           |
-| `speed`    | 120 (mais rápido que o normal — age mais de uma vez por rodada, ver `05-combate.md`) |
+| `speed`    | 100 (ajustado de 120 em 4.5 — nao age mais 2x por rodada, ver `05-combate.md`) |
 | `ai_type`  | `"chase"`   |
 
 **Comportamento:** persegue o jogador de forma agressiva e implacável,

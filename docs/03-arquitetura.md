@@ -58,6 +58,11 @@ só reservar o espaço conceitual na estrutura.
 **Nota de balanceamento (4.2):** o HP base do jogador foi ajustado de 20
 para 28 após playtests mostrarem 0 vitórias em 5 partidas, com mortes
 recorrentes por cerco de múltiplos monstros. Ver `09-playtest-log.md`.
+**Nota de balanceamento (4.5, 2ª rodada):** o ataque e a defesa base do
+jogador foram ajustados de 4/1 para 6/2 após feedback externo mostrar
+que o jogador causava dano mínimo contra defesas de monstros mais altas
+(ex: ~1 de dano contra o chefe final), tornando combates longos
+inviáveis. Ver `16-feedback-externo.md` e `18-bugs-consolidado.md`.
 
 ## 3. Arquitetura Geral
 
