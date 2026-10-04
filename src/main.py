@@ -106,6 +106,7 @@ def handle_coracao_prompt(stdscr, player, damage):
     stdscr.addstr(22, 41, "Espremer Coracao Pulsante? (S/N)"[:38])
     stdscr.refresh()
 
+    curses.flushinp()  # descarta teclas pressionadas antes do prompt aparecer (bug M1)
     key = stdscr.getch()
     stdscr.addstr(22, 41, " " * 38)
 
