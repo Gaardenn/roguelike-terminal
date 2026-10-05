@@ -115,7 +115,11 @@ def handle_coracao_prompt(stdscr, player, damage, redraw=None):
     stdscr.addstr(PROMPT_ROW, 0, "Espremer Coracao Pulsante? (S/N)")
     stdscr.refresh()
 
-    curses.flushinp()
+    try:
+        curses.flushinp()
+    except curses.error:
+        pass  # sem terminal real inicializado (ex: em testes) - ignora com seguranca
+    
     key = stdscr.getch()
 
     if key not in (ord("s"), ord("S")):
