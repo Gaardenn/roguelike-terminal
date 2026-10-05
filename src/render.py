@@ -109,7 +109,7 @@ def render_log(stdscr, messages):
     wrapped_lines = []
     for message in messages:
         color = _classify_message_color(message)
-        for line in (textwrap.warp(message, LOG_WIDTH) or [""]):
+        for line in (textwrap.wrap(message, LOG_WIDTH) or [""]):
             wrapped_lines.append((line, color))
 
     visible_lines = wrapped_lines[-LOG_MAX_LINES:]
