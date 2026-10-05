@@ -91,19 +91,30 @@ def render_status(stdscr, player, floor):
         stdscr.addstr(STATUS_START_Y + 1 + i, 0, line)
 
 
+def _classify_message_color(message):
+    """Classifica a mensagem para fins de cor: dano/morte em vermelho,
+    o resto em branco/neutro (08-interface.md, secao 2)."""
+    if "de dano" in message or "morreu" in message:
+        return COLOR_LOG_DAMAGE
+    return COLOR_LOG_NEUTRAL
+
+
 def render_log(stdscr, messages):
     """Desenha as mensagens mais recentes do log, quebrando mensagens
-    longas em multiplas linhas (08-interface.md, secao 1)."""
+    longas em multiplas linhas e colorindo por tipo (08-interface.md,
+    secao 1 e 2)."""
     for i in range(LOG_MAX_LINES):
         stdscr.addstr(LOG_START_Y + i, LOG_START_X, " " * LOG_WIDTH)
 
     wrapped_lines = []
     for message in messages:
-        wrapped_lines.extend(textwrap.wrap(message, LOG_WIDTH) or [""])
+        color = _classify_message_color(message)
+        for line in (textwrap.warp(message, LOG_WIDTH) or [""]):
+            wrapped_lines.append((line, color))
 
     visible_lines = wrapped_lines[-LOG_MAX_LINES:]
-    for i, line in enumerate(visible_lines):
-        stdscr.addstr(LOG_START_Y + i, LOG_START_X, line)
+    for i, (line, color) in enumerate(visible_lines):
+        stdscr.addstr(LOG_START_Y + i, LOG_START_X, line, color_attr(color))
 
 def render_menu_screen(stdscr):
     """Tela de Menu Inicial (estados-jogo.drawio), com resumo de controles
