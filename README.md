@@ -7,11 +7,72 @@ turnos, rodando em terminal (Windows/Linux/Mac).
 
 ## Requisitos
 - Python 3.10 ou superior
+- Um terminal com pelo menos **81 colunas x 25 linhas **
 
 ## Como rodar
-1. Crie e ative um ambiente virtual: `python3 -m venv venv`
-2. Instale as dependências: `pip install -r requirements.txt`
-3. Execute: `python3 src/main.py`
+
+### 1. Baixe o projeto
+```
+git clone https://github.com/Gaardenn/roguelike-terminal.git
+cd roguelike-terminal
+```
+
+### 2. Crie o ambiente virtual
+
+**Windows (cmd):**
+```
+python -m venv venv
+```
+
+**Windows (PowerShell):**
+```
+python -m venv venv
+```
+
+**Linux/Mac:**
+```
+python3 -m venv venv
+```
+
+### 3. Ative o ambiente virtual
+
+**Windows (Prompt de Comando):**
+```
+venv\Scripts\activate.bat
+```
+
+**Windows (PowerShell):**
+```
+.\venv\Scripts\Activate.ps1
+```
+Se der erro de política de execução, rode uma vez antes:
+```
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+**Linux/Mac:**
+```
+source venv/bin/activate
+```
+
+Em todos os casos, o nome `(venv)` deve aparecer no início da linha do
+terminal, confirmando que está ativado.
+
+### 4. Instale as dependências
+```
+pip install -r requirements.txt
+```
+
+### 5. Execute o jogo
+
+**Windows:**
+```
+python src/main.py
+```
+
+**Linux/Mac:**
+```python3 src/main.py
+```
 
 ## Rodar os testes
 ```
@@ -19,4 +80,5 @@ pytest -v
 ```
 
 ## Documentação
-Veja a pasta `docs/` para escopo, GDD e arquitetura do projeto.
+Veja a pasta `docs/` para escopo, GDD, arquitetura, e todos os
+documentos de design e testes do projeto.
