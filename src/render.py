@@ -116,12 +116,15 @@ def render_log(stdscr, messages):
     for i, (line, color) in enumerate(visible_lines):
         stdscr.addstr(LOG_START_Y + i, LOG_START_X, line, color_attr(color))
 
+GAME_VERSION = "1.0.0"
+
+
 def render_menu_screen(stdscr):
     """Tela de Menu Inicial (estados-jogo.drawio), com resumo de controles
     (melhoria de usabilidade, 4.4)."""
     stdscr.clear()
     lines = [
-        "ROGUELIKE DE TERMINAL",
+        f"ROGUELIKE DE TERMINAL - v{GAME_VERSION}",
         "",
         "Desca os 4 andares da masmorra e derrote O Deus da Morte.",
         "",

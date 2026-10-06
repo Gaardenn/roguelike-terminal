@@ -1,5 +1,7 @@
 # Roguelike de Terminal
 
+**Versão:** 1.0.0
+
 Um roguelike em ASCII, com geração procedural de masmorras e combate por
 turnos, rodando em terminal (Windows/Linux/Mac).
 
