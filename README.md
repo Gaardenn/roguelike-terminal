@@ -127,3 +127,14 @@ pytest -v
 ## Documentação
 Veja a pasta `docs/` para escopo, GDD, arquitetura, e todos os
 documentos de design e testes do projeto.
+
+
+## Créditos
+
+Desenvolvido por **Gaardenn**, com assistência de IA (Claude,
+da Anthropic) ao longo de todo o processo — do planejamento ao código.
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT — veja o arquivo
+[LICENSE](LICENSE) para mais detalhes.
