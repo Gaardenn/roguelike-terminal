@@ -2,6 +2,8 @@
 
 **Versão:** 1.0.0
 
+![Gameplay](docs/media/gameplay.gif)
+
 Um roguelike em ASCII, com geração procedural de masmorras e combate por
 turnos, rodando em terminal (Windows/Linux/Mac).
 
